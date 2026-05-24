@@ -34,6 +34,7 @@ export default function ParentDashboard() {
   const [taskTitle, setTaskTitle] = useState("");
   const [taskCategory, setTaskCategory] = useState("discipline");
   const [taskExp, setTaskExp] = useState(20);
+  const [taskIsMandatory, setTaskIsMandatory] = useState(false);
 
   const [rewardTitle, setRewardTitle] = useState("");
   const [rewardCost, setRewardCost] = useState(50);
@@ -77,8 +78,9 @@ export default function ParentDashboard() {
     e.preventDefault();
     if (!taskTitle.trim()) return;
 
-    addCustomTask(taskTitle, taskExp, taskCategory);
+    addCustomTask(taskTitle, taskExp, taskCategory, taskIsMandatory);
     setTaskTitle("");
+    setTaskIsMandatory(false);
     alert("Đã thêm nhiệm vụ mới thành công! ✅");
   };
 
@@ -299,6 +301,20 @@ export default function ParentDashboard() {
               </div>
             </div>
 
+            {/* Checkbox for mandatory */}
+            <div className="flex items-center gap-2 py-1 text-xs">
+              <input
+                type="checkbox"
+                id="isMandatory"
+                checked={taskIsMandatory}
+                onChange={(e) => setTaskIsMandatory(e.target.checked)}
+                className="w-4 h-4 rounded border-sand text-forest focus:ring-forest"
+              />
+              <label htmlFor="isMandatory" className="font-bold text-gray-600 cursor-pointer select-none">
+                🔴 Đặt làm nhiệm vụ BẮT BUỘC hằng ngày
+              </label>
+            </div>
+
             <button
               type="submit"
               className="w-full bg-forest text-sand-light font-black text-xs py-2 px-4 rounded-xl border-2 border-forest shadow-game-forest btn-game-transition active:shadow-game-pressed"
@@ -314,9 +330,16 @@ export default function ParentDashboard() {
             {tasks.map((t) => (
               <div 
                 key={t.id} 
-                className="bg-sand-light border border-sand p-2.5 rounded-xl flex items-center justify-between text-xs font-bold text-forest-dark gap-2"
+                className={`bg-sand-light border p-2.5 rounded-xl flex items-center justify-between text-xs font-bold text-forest-dark gap-2 ${
+                  t.isMandatory ? "border-red-200 bg-red-50/20" : "border-sand"
+                }`}
               >
-                <span className="truncate max-w-[200px]">{t.title}</span>
+                <div className="flex flex-col truncate">
+                  <span className="truncate max-w-[200px]">{t.title}</span>
+                  {t.isMandatory && (
+                    <span className="text-[8px] font-black text-terracotta uppercase tracking-wide">🔴 Bắt buộc</span>
+                  )}
+                </div>
                 <div className="flex items-center gap-2">
                   <span className="text-[9px] bg-white border border-sand rounded px-1.5 py-0.5 text-gray-500 font-extrabold uppercase">
                     {t.category === "discipline" ? "⚡ KL" : t.category === "strength" ? "❤️ TL" : t.category === "intellect" ? "🧠 TT" : t.category === "creative" ? "🎨 ST" : "🤝 GD"}

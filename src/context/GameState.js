@@ -6,16 +6,16 @@ import confetti from "canvas-confetti";
 const GameContext = createContext();
 
 const DEFAULT_TASKS = [
-  { id: "t1", title: "Dậy đúng giờ đón bình minh 🌅", exp: 10, category: "discipline", completed: false, statKey: "discipline", statVal: 1 },
-  { id: "t2", title: "Tập thể dục năng động 15 phút 🏃‍♂️", exp: 20, category: "strength", completed: false, statKey: "strength", statVal: 2 },
-  { id: "t3", title: "Đọc sách tinh hoa 20 phút 📚", exp: 20, category: "intellect", completed: false, statKey: "intellect", statVal: 2 },
-  { id: "t4", title: "Học tiếng Anh hoặc tìm hiểu AI 🤖", exp: 20, category: "intellect", completed: false, statKey: "intellect", statVal: 2 },
-  { id: "t5", title: "Giúp đỡ việc nhà cho bố mẹ 🧹", exp: 15, category: "help", completed: false, statKey: "help", statVal: 2 },
-  { id: "t6", title: "Làm chủ cảm xúc, luôn mỉm cười 🌸", exp: 15, category: "help", completed: false, statKey: "help", statVal: 1 },
-  { id: "t7", title: "Sắp xếp phòng ngủ ngăn nắp ✨", exp: 20, category: "discipline", completed: false, statKey: "discipline", statVal: 2 },
-  { id: "t8", title: "Viết nhật ký cảm xúc & bài học ngày ✍️", exp: 15, category: "creative", completed: false, statKey: "creative", statVal: 1 },
-  { id: "t9", title: "Hoạt động vẽ tranh/lắp ráp sáng tạo 🎨", exp: 25, category: "creative", completed: false, statKey: "creative", statVal: 2 },
-  { id: "t10", title: "Tuân thủ giới hạn xem TV/chơi Game 📺", exp: 30, category: "discipline", completed: false, statKey: "discipline", statVal: 3 },
+  { id: "t1", title: "Dậy đúng giờ đón bình minh 🌅", exp: 10, category: "discipline", completed: false, statKey: "discipline", statVal: 1, isMandatory: false },
+  { id: "t2", title: "Tập thể dục năng động 15 phút 🏃‍♂️", exp: 20, category: "strength", completed: false, statKey: "strength", statVal: 2, isMandatory: true },
+  { id: "t3", title: "Đọc sách tinh hoa 20 phút 📚", exp: 20, category: "intellect", completed: false, statKey: "intellect", statVal: 2, isMandatory: true },
+  { id: "t4", title: "Học tiếng Anh hoặc tìm hiểu AI 🤖", exp: 20, category: "intellect", completed: false, statKey: "intellect", statVal: 2, isMandatory: true },
+  { id: "t5", title: "Giúp đỡ việc nhà cho bố mẹ 🧹", exp: 15, category: "help", completed: false, statKey: "help", statVal: 2, isMandatory: false },
+  { id: "t6", title: "Làm chủ cảm xúc, luôn mỉm cười 🌸", exp: 15, category: "help", completed: false, statKey: "help", statVal: 1, isMandatory: false },
+  { id: "t7", title: "Sắp xếp phòng ngủ ngăn nắp ✨", exp: 20, category: "discipline", completed: false, statKey: "discipline", statVal: 2, isMandatory: false },
+  { id: "t8", title: "Viết nhật ký cảm xúc & bài học ngày ✍️", exp: 15, category: "creative", completed: false, statKey: "creative", statVal: 1, isMandatory: false },
+  { id: "t9", title: "Hoạt động vẽ tranh/lắp ráp sáng tạo 🎨", exp: 25, category: "creative", completed: false, statKey: "creative", statVal: 2, isMandatory: false },
+  { id: "t10", title: "Tuân thủ giới hạn xem TV/chơi Game 📺", exp: 30, category: "discipline", completed: false, statKey: "discipline", statVal: 3, isMandatory: true },
 ];
 
 const DEFAULT_REWARDS = [
@@ -56,9 +56,13 @@ export function GameProvider({ children }) {
   const [bossName, setBossName] = useState("Thần Lười Biếng 😴");
   const [bossDefeated, setBossDefeated] = useState(false);
 
-  // Entertainment system (Screen Time)
+  // Screen Time Countdown Timer states (Bulletproof Absolute Timestamps)
   const [screenTimeLeft, setScreenTimeLeft] = useState(0); // in seconds
   const [isTimerActive, setIsTimerActive] = useState(false);
+  const [timerEndTime, setTimerEndTime] = useState(0); // Unix timestamp in ms when timer runs out
+
+  // Automation date states
+  const [lastResetDate, setLastResetDate] = useState("");
 
   // Parent controls
   const [parentPin, setParentPin] = useState("1234");
@@ -66,7 +70,7 @@ export function GameProvider({ children }) {
     { id: "e1", text: "Chúc Chiến Binh Quốc Bảo một mùa hè tràn đầy năng lượng! Cố lên con trai! 💪", read: false },
   ]);
 
-  // Sound helper (Web Audio API for simple pop sound effects)
+  // Sound helper (Web Audio API)
   const playSound = (type) => {
     try {
       const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -76,15 +80,13 @@ export function GameProvider({ children }) {
       gain.connect(ctx.destination);
 
       if (type === "complete") {
-        // High pleasant pitch
-        osc.frequency.setValueAtTime(523.25, ctx.currentTime); // C5
-        osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.15); // A5
+        osc.frequency.setValueAtTime(523.25, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.15);
         gain.gain.setValueAtTime(0.1, ctx.currentTime);
         gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
         osc.start();
         osc.stop(ctx.currentTime + 0.2);
       } else if (type === "level-up") {
-        // Fanfare chord
         const playTone = (freq, delay, duration) => {
           const o = ctx.createOscillator();
           const g = ctx.createGain();
@@ -96,22 +98,19 @@ export function GameProvider({ children }) {
           o.start(ctx.currentTime + delay);
           o.stop(ctx.currentTime + delay + duration);
         };
-        playTone(523.25, 0, 0.2); // C5
-        playTone(659.25, 0.1, 0.2); // E5
-        playTone(783.99, 0.2, 0.3); // G5
-        playTone(1046.50, 0.3, 0.5); // C6
+        playTone(523.25, 0, 0.2);
+        playTone(659.25, 0.1, 0.2);
+        playTone(783.99, 0.2, 0.3);
+        playTone(1046.50, 0.3, 0.5);
       } else if (type === "uncomplete") {
-        // Low dull tone
-        osc.frequency.setValueAtTime(220, ctx.currentTime); // A3
+        osc.frequency.setValueAtTime(220, ctx.currentTime);
         osc.frequency.exponentialRampToValueAtTime(110, ctx.currentTime + 0.15);
         gain.gain.setValueAtTime(0.15, ctx.currentTime);
         gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
         osc.start();
         osc.stop(ctx.currentTime + 0.2);
       }
-    } catch (e) {
-      console.log("Audio not supported or interaction needed first", e);
-    }
+    } catch (e) {}
   };
 
   // Load from local storage
@@ -132,8 +131,11 @@ export function GameProvider({ children }) {
         setBossHp(data.bossHp !== undefined ? data.bossHp : 100);
         setBossDefeated(data.bossDefeated || false);
         setScreenTimeLeft(data.screenTimeLeft || 0);
+        setIsTimerActive(data.isTimerActive || false);
+        setTimerEndTime(data.timerEndTime || 0);
         setParentPin(data.parentPin || "1234");
         setEncouragements(data.encouragements || []);
+        setLastResetDate(data.lastResetDate || "");
       } catch (e) {
         console.error("Error loading local state", e);
       }
@@ -157,8 +159,11 @@ export function GameProvider({ children }) {
         bossHp,
         bossDefeated,
         screenTimeLeft,
+        isTimerActive,
+        timerEndTime,
         parentPin,
         encouragements,
+        lastResetDate,
       };
       localStorage.setItem("quocbao_game_state", JSON.stringify(data));
     }
@@ -176,28 +181,56 @@ export function GameProvider({ children }) {
     bossHp,
     bossDefeated,
     screenTimeLeft,
+    isTimerActive,
+    timerEndTime,
     parentPin,
     encouragements,
+    lastResetDate,
   ]);
 
-  // Screen Time Countdown Timer
+  // Bulletproof Absolute Timer Tick
   useEffect(() => {
     let interval = null;
-    if (isTimerActive && screenTimeLeft > 0) {
+    if (isTimerActive && timerEndTime > 0) {
+      // Re-calculate first in case page reloads
+      const initialLeft = Math.max(0, Math.ceil((timerEndTime - Date.now()) / 1000));
+      setScreenTimeLeft(initialLeft);
+      if (initialLeft === 0) {
+        setIsTimerActive(false);
+        setTimerEndTime(0);
+      }
+
       interval = setInterval(() => {
-        setScreenTimeLeft((prev) => {
-          if (prev <= 1) {
-            setIsTimerActive(false);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
+        const now = Date.now();
+        if (now >= timerEndTime) {
+          setScreenTimeLeft(0);
+          setIsTimerActive(false);
+          setTimerEndTime(0);
+          clearInterval(interval);
+        } else {
+          setScreenTimeLeft(Math.ceil((timerEndTime - now) / 1000));
+        }
+      }, 500);
     } else {
       clearInterval(interval);
     }
     return () => clearInterval(interval);
-  }, [isTimerActive, screenTimeLeft]);
+  }, [isTimerActive, timerEndTime]);
+
+  // Automatic Daily Reset Checker
+  useEffect(() => {
+    if (isLoaded) {
+      const todayStr = new Date().toLocaleDateString("vi-VN");
+      if (lastResetDate && lastResetDate !== todayStr) {
+        // Automatically cycle to new day!
+        resetDailyTasks();
+        setLastResetDate(todayStr);
+      } else if (!lastResetDate) {
+        setLastResetDate(todayStr);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoaded, lastResetDate]);
 
   // Formula: EXP needed to level up
   const expToNextLevel = level * 100;
@@ -212,17 +245,14 @@ export function GameProvider({ children }) {
           const nextCompleted = !t.completed;
 
           if (nextCompleted) {
-            // Apply rewards
             let newExp = exp + t.exp;
             let currentLevel = level;
             
-            // Check Level Up
             const needed = currentLevel * 100;
             if (newExp >= needed) {
               newExp -= needed;
               currentLevel += 1;
               
-              // Level up effect
               setTimeout(() => {
                 playSound("level-up");
                 confetti({
@@ -238,7 +268,6 @@ export function GameProvider({ children }) {
             setLevel(currentLevel);
             setEnergy((prev) => Math.min(100, prev + 5));
 
-            // Increase character stats
             if (t.statKey) {
               setStats((prevStats) => ({
                 ...prevStats,
@@ -264,7 +293,6 @@ export function GameProvider({ children }) {
               return nextHp;
             });
           } else {
-            // Deduct stats & EXP if uncompleted
             playSound("uncomplete");
             setExp((prev) => Math.max(0, prev - t.exp));
             setEnergy((prev) => Math.max(0, prev - 5));
@@ -274,7 +302,6 @@ export function GameProvider({ children }) {
                 [t.statKey]: Math.max(10, prevStats[t.statKey] - t.statVal),
               }));
             }
-            // Heal boss slightly
             setBossHp((prevHp) => {
               if (bossDefeated) return 0;
               return Math.min(bossMaxHp, prevHp + Math.ceil(t.exp / 3));
@@ -288,10 +315,19 @@ export function GameProvider({ children }) {
     );
   };
 
-  // Claim Reward with parent PIN verification
+  // Claim Reward with parent PIN verification + Mandatory Tasks check!
   const claimReward = (id, pin) => {
     if (pin !== parentPin) {
       return { success: false, message: "Mã PIN của bố mẹ không đúng! ❌" };
+    }
+
+    // STRICT PARENT CHECK: Enforce completing ALL mandatory tasks first!
+    const uncompletedMandatoryTasks = tasks.filter((t) => t.isMandatory && !t.completed);
+    if (uncompletedMandatoryTasks.length > 0) {
+      return { 
+        success: false, 
+        message: `Quốc Bảo chưa làm xong các nhiệm vụ BẮT BUỘC hằng ngày! Hãy hoàn thành bài vở và tập thể dục trước nhé! ⚠️` 
+      };
     }
 
     const reward = rewards.find((r) => r.id === id);
@@ -303,8 +339,14 @@ export function GameProvider({ children }) {
     );
 
     if (reward.type === "game_time") {
-      setScreenTimeLeft((prev) => prev + reward.value * 60);
-      setIsTimerActive(true);
+      const addedSeconds = reward.value * 60;
+      if (isTimerActive && timerEndTime > 0) {
+        setTimerEndTime((prev) => prev + addedSeconds * 1000);
+      } else {
+        setTimerEndTime(Date.now() + addedSeconds * 1000);
+        setIsTimerActive(true);
+      }
+      setScreenTimeLeft((prev) => prev + addedSeconds);
     }
 
     confetti({
@@ -313,11 +355,28 @@ export function GameProvider({ children }) {
       colors: ["#D97706", "#4CAF50", "#2E7D32"],
     });
 
-    return { success: true, message: `Thành công! Đã quy đổi: ${reward.title} 🎉` };
+    return { success: true, message: `Thành công! Đã duyệt đổi: ${reward.title} 🎉` };
+  };
+
+  // Pause / Resume screen time đếm ngược
+  const toggleTimerState = () => {
+    if (isTimerActive) {
+      // Pause: Save remaining seconds and clear endTime
+      const remainingSeconds = Math.max(0, Math.ceil((timerEndTime - Date.now()) / 1000));
+      setScreenTimeLeft(remainingSeconds);
+      setIsTimerActive(false);
+      setTimerEndTime(0);
+    } else {
+      // Resume: Set new absolute end time based on screenTimeLeft
+      if (screenTimeLeft > 0) {
+        setTimerEndTime(Date.now() + screenTimeLeft * 1000);
+        setIsTimerActive(true);
+      }
+    }
   };
 
   // Add custom task (Parent only)
-  const addCustomTask = (title, expVal, category) => {
+  const addCustomTask = (title, expVal, category, isMandatory = false) => {
     const newId = "custom_" + Date.now();
     let statKey = "discipline";
     if (category === "strength") statKey = "strength";
@@ -334,6 +393,7 @@ export function GameProvider({ children }) {
       statKey,
       statVal: 2,
       custom: true,
+      isMandatory,
     };
 
     setTasks((prev) => [...prev, newTask]);
@@ -353,7 +413,7 @@ export function GameProvider({ children }) {
       id: newId,
       title,
       cost: parseInt(costVal) || 50,
-      type: typeVal, // game_time, perk, card
+      type: typeVal,
       value: typeVal === "game_time" ? parseInt(minutes) : "custom_perk",
       parentApproved: false,
       custom: true,
@@ -369,14 +429,12 @@ export function GameProvider({ children }) {
     return { success: true };
   };
 
-  // Reset daily tasks (Parent/System check-in)
+  // Reset daily tasks
   const resetDailyTasks = () => {
-    // Check if at least 3 tasks completed to update streak
     const completedCount = tasks.filter((t) => t.completed).length;
     if (completedCount >= 3) {
       setStreak((prev) => prev + 1);
     } else if (completedCount === 0 && streak > 0) {
-      // Lose streak if absolutely no activity today
       setStreak(0);
     }
 
@@ -384,7 +442,6 @@ export function GameProvider({ children }) {
     setEnergy(100);
     setRewards((prev) => prev.map((r) => ({ ...r, parentApproved: false })));
     
-    // Reset Weekly Boss HP if defeated
     if (bossDefeated) {
       setBossHp(100);
       setBossDefeated(false);
@@ -422,6 +479,8 @@ export function GameProvider({ children }) {
     setBossDefeated(false);
     setScreenTimeLeft(0);
     setIsTimerActive(false);
+    setTimerEndTime(0);
+    setLastResetDate(new Date().toLocaleDateString("vi-VN"));
     setEncouragements([
       { id: "e1", text: "Chào mừng Quốc Bảo bước vào Hành trình anh hùng mùa hè! Con sẵn sàng chưa? 🌳", read: false }
     ]);
@@ -448,6 +507,7 @@ export function GameProvider({ children }) {
         completeTask,
         rewards,
         claimReward,
+        toggleTimerState,
         bossHp,
         bossMaxHp,
         bossName,
@@ -456,6 +516,7 @@ export function GameProvider({ children }) {
         setScreenTimeLeft,
         isTimerActive,
         setIsTimerActive,
+        timerEndTime,
         parentPin,
         setParentPin,
         encouragements,

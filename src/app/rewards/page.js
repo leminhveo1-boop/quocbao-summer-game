@@ -11,9 +11,9 @@ export default function RewardsPage() {
     charName,
     rewards,
     claimReward,
+    toggleTimerState,
     screenTimeLeft,
     isTimerActive,
-    setIsTimerActive,
   } = useGame();
 
   const [selectedReward, setSelectedReward] = useState(null); // Reward to redeem
@@ -106,7 +106,7 @@ export default function RewardsPage() {
           {screenTimeLeft > 0 && (
             <div className="flex items-center gap-3">
               <button
-                onClick={() => setIsTimerActive(!isTimerActive)}
+                onClick={toggleTimerState}
                 className={`flex-grow font-extrabold text-sm py-3 px-4 rounded-xl border-2 btn-game-transition ${
                   isTimerActive 
                     ? "bg-terracotta border-terracotta text-white shadow-game-terracotta active:shadow-game-pressed"

@@ -315,62 +315,75 @@ export default function DashboardPage() {
                 📭 Không có nhiệm vụ nào trong danh mục này!
               </div>
             ) : (
-              filteredTasks.map((task) => {
-                // Determine style based on category
-                let categoryColor = "border-sand";
-                let emoji = "🛡️";
-                let statText = "EXP";
-                if (task.category === "discipline") { categoryColor = "border-amber"; emoji = "⚡"; statText = "Kỷ luật"; }
-                if (task.category === "strength") { categoryColor = "border-terracotta"; emoji = "❤️"; statText = "Thể lực"; }
-                if (task.category === "intellect") { categoryColor = "border-sky"; emoji = "🧠"; statText = "Trí tuệ"; }
-                if (task.category === "creative") { categoryColor = "border-clay"; emoji = "🎨"; statText = "Sáng tạo"; }
-                if (task.category === "help") { categoryColor = "border-forest"; emoji = "🤝"; statText = "Giúp đỡ"; }
+              [...filteredTasks]
+                .sort((a, b) => {
+                  if (a.completed !== b.completed) return a.completed ? 1 : -1;
+                  if (a.isMandatory !== b.isMandatory) return a.isMandatory ? -1 : 1;
+                  return 0;
+                })
+                .map((task) => {
+                  // Determine style based on category
+                  let emoji = "🛡️";
+                  let statText = "EXP";
+                  if (task.category === "discipline") { emoji = "⚡"; statText = "Kỷ luật"; }
+                  if (task.category === "strength") { emoji = "❤️"; statText = "Thể lực"; }
+                  if (task.category === "intellect") { emoji = "🧠"; statText = "Trí tuệ"; }
+                  if (task.category === "creative") { emoji = "🎨"; statText = "Sáng tạo"; }
+                  if (task.category === "help") { emoji = "🤝"; statText = "Giúp đỡ"; }
 
-                return (
-                  <button
-                    key={task.id}
-                    onClick={() => completeTask(task.id)}
-                    className={`w-full text-left bg-white border-2 rounded-2xl p-4 flex items-center justify-between gap-4 btn-game-transition ${
-                      task.completed 
-                        ? "border-sand opacity-60 line-through bg-gray-50 shadow-none translate-y-[2px]" 
-                        : `border-sand shadow-game-flat hover:border-sand-dark`
-                    }`}
-                  >
-                    {/* Checkbox Icon */}
-                    <div className="flex items-center gap-3 flex-grow">
-                      <div className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center text-xs font-black transition-colors ${
-                        task.completed 
-                          ? "bg-forest-medium border-forest-medium text-white" 
-                          : "border-sand bg-sand-light text-transparent"
-                      }`}>
-                        ✓
-                      </div>
+                  let itemStyle = "border-sand shadow-game-flat hover:border-sand-dark";
+                  if (task.isMandatory && !task.completed) {
+                    itemStyle = "border-red-200 bg-red-50/10 shadow-game-terracotta hover:border-red-300";
+                  } else if (task.completed) {
+                    itemStyle = "border-sand opacity-60 line-through bg-gray-50 shadow-none translate-y-[2px]";
+                  }
 
-                      {/* Title & category tag */}
-                      <div className="space-y-0.5">
-                        <span className={`text-xs font-extrabold ${task.completed ? "text-gray-400" : "text-forest-dark"}`}>
-                          {task.title}
-                        </span>
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider flex items-center gap-0.5">
-                            {emoji} {statText}
+                  return (
+                    <button
+                      key={task.id}
+                      onClick={() => completeTask(task.id)}
+                      className={`w-full text-left bg-white border-2 rounded-2xl p-4 flex items-center justify-between gap-4 btn-game-transition ${itemStyle}`}
+                    >
+                      {/* Checkbox Icon */}
+                      <div className="flex items-center gap-3 flex-grow">
+                        <div className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center text-xs font-black transition-colors ${
+                          task.completed 
+                            ? "bg-forest-medium border-forest-medium text-white" 
+                            : "border-sand bg-sand-light text-transparent"
+                        }`}>
+                          ✓
+                        </div>
+
+                        {/* Title & category tag */}
+                        <div className="space-y-0.5">
+                          <span className={`text-xs font-extrabold ${task.completed ? "text-gray-400" : "text-forest-dark"}`}>
+                            {task.title}
                           </span>
-                          {task.custom && (
-                            <span className="text-[7.5px] font-black px-1.5 py-0.2 rounded bg-amber-light text-amber border border-amber/30 uppercase">
-                              Bố mẹ giao 👑
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider flex items-center gap-0.5">
+                              {emoji} {statText}
                             </span>
-                          )}
+                            {task.isMandatory && !task.completed && (
+                              <span className="text-[7.5px] font-black px-1.5 py-0.2 rounded bg-rose-100 text-terracotta border border-red-200 uppercase animate-pulse">
+                                Bắt buộc 🔴
+                              </span>
+                            )}
+                            {task.custom && (
+                              <span className="text-[7.5px] font-black px-1.5 py-0.2 rounded bg-amber-light text-amber border border-amber/30 uppercase">
+                                Bố mẹ giao 👑
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </div>
-                    </div>
 
-                    {/* EXP Reward Tag */}
-                    <div className={`text-right font-black text-xs ${task.completed ? "text-gray-400" : "text-forest"}`}>
-                      +{task.exp} EXP
-                    </div>
-                  </button>
-                );
-              })
+                      {/* EXP Reward Tag */}
+                      <div className={`text-right font-black text-xs ${task.completed ? "text-gray-400" : "text-forest"}`}>
+                        +{task.exp} EXP
+                      </div>
+                    </button>
+                  );
+                })
             )}
           </div>
         </div>
