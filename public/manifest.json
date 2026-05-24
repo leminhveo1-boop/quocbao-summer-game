@@ -1,0 +1,17 @@
+{
+  "name": "Hành Trình Anh Hùng Quốc Bảo",
+  "short_name": "Anh Hùng Quốc Bảo",
+  "description": "Game hóa giáo dục phát triển bản thân dành cho trẻ em ngoài đời thật.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FDFBF7",
+  "theme_color": "#2E7D32",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    }
+  ]
+}

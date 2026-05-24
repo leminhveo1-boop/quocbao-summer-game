@@ -1,0 +1,69 @@
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  content: [
+    "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
+  ],
+  theme: {
+    extend: {
+      colors: {
+        forest: {
+          light: "#E8F5E9",
+          medium: "#4CAF50",
+          DEFAULT: "#2E7D32", // Cozy dark green
+          dark: "#1B5E20",
+          accent: "#A7F3D0", // Emerald light
+        },
+        sand: {
+          light: "#FDFBF7", // Background warm cozy cream
+          DEFAULT: "#F5EFE6", // Sand border
+          dark: "#E4DCCF",
+          card: "#FFFFFF",
+        },
+        amber: {
+          light: "#FEF3C7",
+          DEFAULT: "#D97706", // Discipline orange
+          dark: "#B45309",
+        },
+        terracotta: {
+          light: "#FFE4E6",
+          DEFAULT: "#E11D48", // Strength/energy red
+          dark: "#BE123C",
+        },
+        sky: {
+          light: "#E0F2FE",
+          DEFAULT: "#0284C7", // Intellect blue
+          dark: "#0369A1",
+        },
+        clay: {
+          light: "#F3E8FF",
+          DEFAULT: "#7C3AED", // Creative violet (custom soft color)
+          dark: "#6D28D9",
+        },
+      },
+      borderRadius: {
+        "2xl": "1.25rem",
+        "3xl": "1.75rem",
+        "4xl": "2.5rem",
+      },
+      boxShadow: {
+        // Flat 3D game button shadows (Duolingo style)
+        "game-flat": "0 6px 0px 0px #E4DCCF",
+        "game-pressed": "0 2px 0px 0px #E4DCCF",
+        "game-forest": "0 6px 0px 0px #1B5E20",
+        "game-forest-pressed": "0 2px 0px 0px #1B5E20",
+        "game-amber": "0 6px 0px 0px #B45309",
+        "game-amber-pressed": "0 2px 0px 0px #B45309",
+        "game-terracotta": "0 6px 0px 0px #BE123C",
+        "game-terracotta-pressed": "0 2px 0px 0px #BE123C",
+        "game-sky": "0 6px 0px 0px #0369A1",
+        "game-sky-pressed": "0 2px 0px 0px #0369A1",
+      },
+      fontFamily: {
+        outfit: ["var(--font-outfit)", "sans-serif"],
+      },
+    },
+  },
+  plugins: [],
+};

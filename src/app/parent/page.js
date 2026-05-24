@@ -1,0 +1,523 @@
+"use client";
+
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useGame } from "@/context/GameState";
+
+export default function ParentDashboard() {
+  const router = useRouter();
+  const {
+    isLoaded,
+    charName,
+    charClass,
+    level,
+    streak,
+    stats,
+    tasks,
+    rewards,
+    parentPin,
+    setParentPin,
+    addCustomTask,
+    deleteTask,
+    addCustomReward,
+    deleteReward,
+    sendEncouragement,
+    resetDailyTasks,
+  } = useGame();
+
+  // Authentication Gate State
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [pinEntry, setPinEntry] = useState("");
+  const [pinError, setPinError] = useState("");
+
+  // CRUD Forms States
+  const [taskTitle, setTaskTitle] = useState("");
+  const [taskCategory, setTaskCategory] = useState("discipline");
+  const [taskExp, setTaskExp] = useState(20);
+
+  const [rewardTitle, setRewardTitle] = useState("");
+  const [rewardCost, setRewardCost] = useState(50);
+  const [rewardType, setRewardType] = useState("perk");
+  const [rewardMinutes, setRewardMinutes] = useState(20);
+
+  const [encouragementText, setEncouragementText] = useState("");
+  const [messageSuccess, setMessageSuccess] = useState(false);
+
+  const [newPin, setNewPin] = useState("");
+  const [pinChangeSuccess, setPinChangeSuccess] = useState("");
+
+  useEffect(() => {
+    if (isLoaded && !charName) {
+      router.push("/");
+    }
+  }, [isLoaded, charName, router]);
+
+  if (!isLoaded) {
+    return (
+      <div className="flex flex-col items-center justify-center flex-grow p-6 text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-forest"></div>
+        <p className="mt-4 text-forest font-medium">Đang tải...</p>
+      </div>
+    );
+  }
+
+  // Handle PIN validation to enter Parent room
+  const handlePinSubmit = (e) => {
+    e.preventDefault();
+    if (pinEntry === parentPin) {
+      setIsAuthenticated(true);
+      setPinError("");
+    } else {
+      setPinError("Mã PIN không khớp! Vui lòng thử lại. ❌");
+    }
+  };
+
+  // Submit custom task
+  const handleAddTask = (e) => {
+    e.preventDefault();
+    if (!taskTitle.trim()) return;
+
+    addCustomTask(taskTitle, taskExp, taskCategory);
+    setTaskTitle("");
+    alert("Đã thêm nhiệm vụ mới thành công! ✅");
+  };
+
+  // Submit custom reward
+  const handleAddReward = (e) => {
+    e.preventDefault();
+    if (!rewardTitle.trim()) return;
+
+    addCustomReward(rewardTitle, rewardCost, rewardType, rewardMinutes);
+    setRewardTitle("");
+    alert("Đã thêm phần thưởng mới thành công! ✅");
+  };
+
+  // Send pigeon message
+  const handleSendMessage = (e) => {
+    e.preventDefault();
+    if (!encouragementText.trim()) return;
+
+    sendEncouragement(encouragementText);
+    setEncouragementText("");
+    setMessageSuccess(true);
+    setTimeout(() => setMessageSuccess(false), 3000);
+  };
+
+  // Change PIN
+  const handleChangePin = (e) => {
+    e.preventDefault();
+    if (newPin.length < 4) {
+      setPinChangeSuccess("Mã PIN mới phải từ 4 số trở lên! ❌");
+      return;
+    }
+    setParentPin(newPin);
+    setNewPin("");
+    setPinChangeSuccess("Đã thay đổi mã PIN thành công! ✅");
+    setTimeout(() => setPinChangeSuccess(""), 3000);
+  };
+
+  // AUTHENTICATION GATE - Security passcode check
+  if (!isAuthenticated) {
+    return (
+      <div className="flex flex-col flex-grow items-center justify-center p-6 text-center">
+        <form 
+          onSubmit={handlePinSubmit}
+          className="bg-white border-4 border-amber rounded-3xl p-6 shadow-2xl w-full max-w-sm text-center space-y-5"
+        >
+          <div className="w-16 h-16 bg-amber-light rounded-full border-2 border-amber mx-auto flex items-center justify-center text-3xl shadow animate-float">
+            🔑
+          </div>
+
+          <div className="space-y-1">
+            <h2 className="text-lg font-black text-forest-dark uppercase tracking-wider">Cửa Phòng Bố Mẹ</h2>
+            <p className="text-[10.5px] text-gray-500">Mã PIN mặc định là <strong className="text-amber">1234</strong>. Vui lòng nhập để tiếp tục quản trị.</p>
+          </div>
+
+          <div className="space-y-2">
+            <input
+              type="password"
+              pattern="[0-9]*"
+              inputMode="numeric"
+              maxLength={6}
+              value={pinEntry}
+              onChange={(e) => setPinEntry(e.target.value)}
+              placeholder="Nhập mã PIN của bố mẹ..."
+              className="w-full text-center bg-sand-light border-2 border-sand rounded-xl py-3 text-lg font-black text-forest-dark focus:outline-none focus:border-forest transition-colors"
+            />
+            {pinError && <p className="text-[10.5px] font-bold text-terracotta">{pinError}</p>}
+          </div>
+
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => router.push("/dashboard")}
+              className="w-1/2 bg-white text-gray-400 font-extrabold text-xs py-3 rounded-xl border-2 border-sand shadow-game-flat btn-game-transition active:shadow-game-pressed"
+            >
+              QUAY LẠI 🌳
+            </button>
+            <button
+              type="submit"
+              className="w-1/2 bg-amber text-sand-light font-black text-xs py-3 rounded-xl border-2 border-amber shadow-game-amber btn-game-transition active:shadow-game-pressed"
+            >
+              VÀO QUẢN TRỊ 🔓
+            </button>
+          </div>
+        </form>
+      </div>
+    );
+  }
+
+  // PARENT DASHBOARD MAIN AREA
+  return (
+    <div className="flex flex-col flex-grow relative pb-20">
+      
+      {/* Scrollable control panel */}
+      <div className="flex-grow p-5 space-y-6 overflow-y-auto">
+        
+        {/* Header back navigation */}
+        <div className="flex items-center justify-between">
+          <button 
+            onClick={() => router.push("/dashboard")}
+            className="text-xs font-bold text-gray-500 hover:text-forest-dark uppercase tracking-wider flex items-center gap-1"
+          >
+            🌳 Dashboard
+          </button>
+          <span className="text-xs font-black text-amber">🔑 PHÒNG QUẢN TRỊ BỐ MẸ</span>
+        </div>
+
+        {/* 1. CHILD PROGRESS ANALYTICS */}
+        <div className="bg-white border-2 border-sand p-4 rounded-3xl shadow-game-flat space-y-4">
+          <div className="text-center space-y-1">
+            <h3 className="text-xs font-black text-forest-dark uppercase tracking-wider">📈 Tiến Trình Học Tập Của Con</h3>
+            <p className="text-[10px] text-gray-400">Chiến binh {charName} - Cấp độ {level} (Streak {streak} ngày 🔥)</p>
+          </div>
+
+          {/* Bar charts of stats */}
+          <div className="space-y-3.5 pt-2">
+            {Object.entries(stats).map(([key, val]) => {
+              let label = "";
+              let color = "bg-terracotta";
+              let emoji = "";
+              if (key === "strength") { label = "Thể lực"; color = "bg-terracotta"; emoji = "❤️"; }
+              if (key === "intellect") { label = "Trí tuệ"; color = "bg-sky"; emoji = "🧠"; }
+              if (key === "discipline") { label = "Kỷ luật"; color = "bg-amber"; emoji = "⚡"; }
+              if (key === "creative") { label = "Sáng tạo"; color = "bg-clay"; emoji = "🎨"; }
+              if (key === "help") { label = "Giúp đỡ"; color = "bg-forest-medium"; emoji = "🤝"; }
+
+              // Calculate proportional width relative to max stat level of 100
+              const percentage = Math.min(100, Math.round((val / 100) * 100));
+
+              return (
+                <div key={key} className="space-y-1 text-xs">
+                  <div className="flex justify-between font-bold text-gray-600">
+                    <span className="flex items-center gap-1">{emoji} {label}</span>
+                    <span className="font-extrabold">{val} Điểm</span>
+                  </div>
+                  <div className="w-full bg-sand h-3 rounded-full border border-sand overflow-hidden relative shadow-inner">
+                    <div 
+                      className={`${color} h-full transition-all duration-500`}
+                      style={{ width: `${percentage}%` }}
+                    ></div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* 2. SEND PIGEON ENCOURAGEMENT MESSAGE */}
+        <div className="bg-white border-2 border-sand p-4 rounded-3xl shadow-game-flat space-y-3">
+          <h3 className="text-xs font-black text-forest-dark uppercase tracking-wider">🕊️ Thả Bồ Câu Động Viên Con</h3>
+          <form onSubmit={handleSendMessage} className="space-y-3">
+            <textarea
+              rows={2}
+              value={encouragementText}
+              onChange={(e) => setEncouragementText(e.target.value)}
+              placeholder="Nhập lời khen ngợi/động viên gửi con..."
+              className="w-full bg-sand-light border-2 border-sand rounded-xl p-3 text-xs font-bold text-forest-dark focus:outline-none focus:border-forest"
+              maxLength={150}
+            />
+            <div className="flex justify-between items-center">
+              {messageSuccess && <span className="text-[10px] font-bold text-forest">Đã buộc thư vào chân bồ câu! 🕊️</span>}
+              <button
+                type="submit"
+                className="ml-auto bg-forest text-sand-light font-black text-[11px] py-2 px-4 rounded-xl border-2 border-forest shadow-game-forest btn-game-transition active:shadow-game-pressed"
+              >
+                GỬI LỜI NHẮN 💌
+              </button>
+            </div>
+          </form>
+        </div>
+
+        {/* 3. CRUD TASK MANAGEMENT PANEL */}
+        <div className="bg-white border-2 border-sand p-4 rounded-3xl shadow-game-flat space-y-4">
+          <h3 className="text-xs font-black text-forest-dark uppercase tracking-wider">🎯 Thiết Lập Nhiệm Vụ Ngày</h3>
+          
+          {/* Quick Create Task Form */}
+          <form onSubmit={handleAddTask} className="bg-sand-light border border-sand p-3.5 rounded-2xl space-y-3">
+            <div className="text-[10px] font-black text-forest uppercase tracking-wider">⚡ Tạo Nhiệm Vụ Tùy Chỉnh</div>
+            
+            <input
+              type="text"
+              value={taskTitle}
+              onChange={(e) => setTaskTitle(e.target.value)}
+              placeholder="Nhập tên nhiệm vụ... (ví dụ: Tưới cây 🌲)"
+              className="w-full bg-white border border-sand rounded-xl px-3 py-2 text-xs font-bold text-forest-dark focus:outline-none focus:border-forest"
+              maxLength={40}
+              required
+            />
+
+            <div className="grid grid-cols-2 gap-3 text-xs">
+              <div className="space-y-1">
+                <label className="text-[9px] font-bold text-gray-500 uppercase tracking-wide">Nhóm Chỉ Số</label>
+                <select
+                  value={taskCategory}
+                  onChange={(e) => setTaskCategory(e.target.value)}
+                  className="w-full bg-white border border-sand rounded-xl p-2 text-xs font-bold text-forest-dark focus:outline-none"
+                >
+                  <option value="discipline">⚡ Kỷ luật</option>
+                  <option value="strength">❤️ Thể lực</option>
+                  <option value="intellect">🧠 Trí tuệ</option>
+                  <option value="creative">🎨 Sáng tạo</option>
+                  <option value="help">🤝 Giúp đỡ</option>
+                </select>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[9px] font-bold text-gray-500 uppercase tracking-wide">EXP Nhận Được</label>
+                <select
+                  value={taskExp}
+                  onChange={(e) => setTaskExp(e.target.value)}
+                  className="w-full bg-white border border-sand rounded-xl p-2 text-xs font-bold text-forest-dark focus:outline-none"
+                >
+                  <option value={10}>+10 EXP</option>
+                  <option value={15}>+15 EXP</option>
+                  <option value={20}>+20 EXP (Khuyên Dùng)</option>
+                  <option value={25}>+25 EXP</option>
+                  <option value={30}>+30 EXP</option>
+                </select>
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              className="w-full bg-forest text-sand-light font-black text-xs py-2 px-4 rounded-xl border-2 border-forest shadow-game-forest btn-game-transition active:shadow-game-pressed"
+            >
+              THÊM NHIỆM VỤ MỚI ➕
+            </button>
+          </form>
+
+          {/* List of current tasks */}
+          <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
+            <div className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Nhiệm Vụ Hiện Tại:</div>
+            
+            {tasks.map((t) => (
+              <div 
+                key={t.id} 
+                className="bg-sand-light border border-sand p-2.5 rounded-xl flex items-center justify-between text-xs font-bold text-forest-dark gap-2"
+              >
+                <span className="truncate max-w-[200px]">{t.title}</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-[9px] bg-white border border-sand rounded px-1.5 py-0.5 text-gray-500 font-extrabold uppercase">
+                    {t.category === "discipline" ? "⚡ KL" : t.category === "strength" ? "❤️ TL" : t.category === "intellect" ? "🧠 TT" : t.category === "creative" ? "🎨 ST" : "🤝 GD"}
+                  </span>
+                  <button
+                    onClick={() => {
+                      if (confirm(`Con có chắc muốn xóa nhiệm vụ này không?`)) {
+                        deleteTask(t.id);
+                      }
+                    }}
+                    className="text-terracotta hover:text-red-700 text-sm p-1.5"
+                    title="Xóa nhiệm vụ"
+                  >
+                    🗑️
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* 4. CRUD REWARD MANAGEMENT PANEL */}
+        <div className="bg-white border-2 border-sand p-4 rounded-3xl shadow-game-flat space-y-4">
+          <h3 className="text-xs font-black text-forest-dark uppercase tracking-wider">🎁 Thiết Lập Cửa Hàng Quà Tặng</h3>
+          
+          {/* Quick Create Reward Form */}
+          <form onSubmit={handleAddReward} className="bg-sand-light border border-sand p-3.5 rounded-2xl space-y-3">
+            <div className="text-[10px] font-black text-forest uppercase tracking-wider">⚡ Tạo Phần Thưởng Tùy Chỉnh</div>
+            
+            <input
+              type="text"
+              value={rewardTitle}
+              onChange={(e) => setRewardTitle(e.target.value)}
+              placeholder="Tên phần thưởng... (ví dụ: Ăn kem tươi 🍨)"
+              className="w-full bg-white border border-sand rounded-xl px-3 py-2 text-xs font-bold text-forest-dark focus:outline-none focus:border-forest"
+              maxLength={40}
+              required
+            />
+
+            <div className="grid grid-cols-2 gap-3 text-xs">
+              <div className="space-y-1">
+                <label className="text-[9px] font-bold text-gray-500 uppercase tracking-wide">Điểm Quy Đổi</label>
+                <input
+                  type="number"
+                  value={rewardCost}
+                  onChange={(e) => setRewardCost(e.target.value)}
+                  className="w-full bg-white border border-sand rounded-xl px-3 py-2 text-xs font-bold text-forest-dark focus:outline-none focus:border-forest"
+                  min={10}
+                  required
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[9px] font-bold text-gray-500 uppercase tracking-wide">Loại Quà</label>
+                <select
+                  value={rewardType}
+                  onChange={(e) => setRewardType(e.target.value)}
+                  className="w-full bg-white border border-sand rounded-xl p-2 text-xs font-bold text-forest-dark focus:outline-none"
+                >
+                  <option value="perk">🎁 Món quà thực tế</option>
+                  <option value="game_time">⏰ Khóa giờ chơi game</option>
+                  <option value="card">🎟️ Thẻ bài đặc quyền</option>
+                </select>
+              </div>
+            </div>
+
+            {rewardType === "game_time" && (
+              <div className="space-y-1 text-xs">
+                <label className="text-[9px] font-bold text-gray-500 uppercase tracking-wide">Số Phút Mở Khóa Đếm Ngược</label>
+                <input
+                  type="number"
+                  value={rewardMinutes}
+                  onChange={(e) => setRewardMinutes(e.target.value)}
+                  className="w-full bg-white border border-sand rounded-xl px-3 py-2 text-xs font-bold text-forest-dark focus:outline-none focus:border-forest"
+                  min={5}
+                />
+              </div>
+            )}
+
+            <button
+              type="submit"
+              className="w-full bg-forest text-sand-light font-black text-xs py-2 px-4 rounded-xl border-2 border-forest shadow-game-forest btn-game-transition active:shadow-game-pressed"
+            >
+              THÊM PHẦN THƯỞNG ➕
+            </button>
+          </form>
+
+          {/* List of current rewards */}
+          <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
+            <div className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Danh Sách Quà Hiện Tại:</div>
+            
+            {rewards.map((r) => (
+              <div 
+                key={r.id} 
+                className="bg-sand-light border border-sand p-2.5 rounded-xl flex items-center justify-between text-xs font-bold text-forest-dark gap-2"
+              >
+                <span className="truncate max-w-[180px]">{r.title}</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-[9px] bg-white border border-sand rounded px-1.5 py-0.5 text-gray-500 font-extrabold uppercase">
+                    {r.cost} điểm
+                  </span>
+                  <button
+                    onClick={() => {
+                      if (confirm(`Bố mẹ chắc chắn muốn xóa phần thưởng này chứ?`)) {
+                        deleteReward(r.id);
+                      }
+                    }}
+                    className="text-terracotta hover:text-red-700 text-sm p-1.5"
+                    title="Xóa phần thưởng"
+                  >
+                    🗑️
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* 5. DAILY OVERRIDE RESET & PIN CHANGE CONFIGS */}
+        <div className="bg-white border-2 border-sand p-4 rounded-3xl shadow-game-flat space-y-4">
+          <h3 className="text-xs font-black text-forest-dark uppercase tracking-wider">⚙️ Bảng Điều Khiển Hệ Thống</h3>
+
+          {/* Pin Change Form */}
+          <form onSubmit={handleChangePin} className="space-y-3 border-b border-sand pb-4">
+            <div className="text-[10px] font-black text-gray-400 uppercase tracking-wider">🔒 Thay Đổi Mã PIN Phụ Huynh</div>
+            <div className="flex gap-2">
+              <input
+                type="password"
+                pattern="[0-9]*"
+                inputMode="numeric"
+                maxLength={6}
+                value={newPin}
+                onChange={(e) => setNewPin(e.target.value)}
+                placeholder="Nhập mã PIN mới..."
+                className="w-2/3 bg-sand-light border border-sand rounded-xl px-3 py-2 text-xs font-bold text-forest-dark focus:outline-none"
+              />
+              <button
+                type="submit"
+                className="w-1/3 bg-forest text-sand-light font-black text-[10px] rounded-xl border-2 border-forest shadow-game-forest btn-game-transition active:shadow-game-pressed"
+              >
+                CẬP NHẬT 🔒
+              </button>
+            </div>
+            {pinChangeSuccess && <p className="text-[10px] font-bold text-center text-forest">{pinChangeSuccess}</p>}
+          </form>
+
+          {/* Manual Daily Reset Button */}
+          <div className="space-y-2 text-center">
+            <div className="text-[10px] font-black text-gray-400 uppercase tracking-wider text-left">🔄 Đặt Lại Ngày Mới</div>
+            <p className="text-[9px] text-gray-500 text-left">Nhiệm vụ của bé và trạng thái quy đổi quà sẽ được xóa để sẵn sàng cho ngày mới. Nếu bé làm tốt từ 3 việc trở lên, ngọn lửa Streak 🔥 sẽ tăng lên!</p>
+            
+            <button
+              onClick={() => {
+                if (confirm("Bố mẹ chắc chắn muốn reset ngày mới và cộng dồn ngọn lửa Streak cho con chứ?")) {
+                  resetDailyTasks();
+                  alert("Đã khởi động ngày mới thành công! 🔄 Giao diện của con đã được làm mới.");
+                }
+              }}
+              className="w-full bg-amber text-sand-light font-black text-xs py-3 px-4 rounded-xl border-2 border-amber shadow-game-amber btn-game-transition active:shadow-game-pressed"
+            >
+              GIẢ LẬP KÍCH HOẠT NGÀY MỚI 🔄
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      {/* BOTTOM TAB NAVIGATION */}
+      <div className="absolute bottom-0 inset-x-0 bg-white border-t-2 border-sand p-2 flex items-center justify-around z-40 max-w-md mx-auto">
+        <button
+          onClick={() => router.push("/dashboard")}
+          className="flex flex-col items-center p-2 text-gray-400 hover:text-forest space-y-0.5"
+        >
+          <span className="text-xl">🌳</span>
+          <span className="text-[9px] font-extrabold uppercase tracking-wider">Phiêu Lưu</span>
+        </button>
+
+        <button
+          onClick={() => router.push("/rewards")}
+          className="flex flex-col items-center p-2 text-gray-400 hover:text-forest space-y-0.5"
+        >
+          <span className="text-xl">🛒</span>
+          <span className="text-[9px] font-extrabold uppercase tracking-wider">Đổi Quà</span>
+        </button>
+
+        <button
+          onClick={() => router.push("/boss")}
+          className="flex flex-col items-center p-2 text-gray-400 hover:text-forest space-y-0.5"
+        >
+          <span className="text-xl">👾</span>
+          <span className="text-[9px] font-extrabold uppercase tracking-wider">Boss Tuần</span>
+        </button>
+
+        <button
+          onClick={() => {}}
+          className="flex flex-col items-center p-2 text-forest-medium space-y-0.5"
+        >
+          <span className="text-xl">🔑</span>
+          <span className="text-[9px] font-black uppercase tracking-wider">Bố Mẹ</span>
+        </button>
+      </div>
+    </div>
+  );
+}
