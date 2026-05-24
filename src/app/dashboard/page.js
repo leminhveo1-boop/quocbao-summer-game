@@ -21,7 +21,7 @@ export default function DashboardPage() {
     completeTask,
     encouragements,
     readAllMessages,
-    gold,
+    heroCoins,
     points,
     lastPointsGain,
     setLastPointsGain,
@@ -179,13 +179,13 @@ export default function DashboardPage() {
             <span className="text-[9px] font-black text-forest-dark">{points} ĐIỂM</span>
           </div>
 
-          {/* Gold Wallet */}
+          {/* Hero Coin Wallet */}
           <div 
             onClick={() => router.push("/rewards")}
             className="flex items-center gap-0.5 bg-white border-2 border-sand px-2 py-1.5 rounded-full shadow-game-flat transition-all hover:border-amber cursor-pointer active:scale-95"
           >
             <span className="text-xs animate-bounce">🪙</span>
-            <span className="text-[9px] font-black text-amber-dark">{gold} VÀNG</span>
+            <span className="text-[9px] font-black text-amber-dark">{heroCoins} COIN</span>
           </div>
 
           {/* Messages Bird (Carrier Pigeon Alert) */}
@@ -431,12 +431,12 @@ export default function DashboardPage() {
                         </div>
                       </div>
 
-                      {/* EXP / Points / Gold Reward Tag */}
+                      {/* EXP / Points / Energy Reward Tag */}
                       <div className="text-right flex flex-col items-end justify-center gap-0.5 font-black text-[9px]">
                         <span className={task.completed ? "text-gray-400" : "text-forest"}>+{task.exp} EXP</span>
                         <span className={task.completed ? "text-gray-400" : "text-forest-medium"}>+{task.points !== undefined ? task.points : task.exp} ⭐</span>
-                        {task.gold > 0 && (
-                          <span className={task.completed ? "text-gray-400" : "text-amber-dark"}>+{task.gold} 🪙</span>
+                        {task.energy > 0 && (
+                          <span className={task.completed ? "text-gray-400" : "text-amber-dark"}>+{task.energy} ⚡</span>
                         )}
                       </div>
                     </button>
@@ -560,11 +560,12 @@ export default function DashboardPage() {
 
               <div className="space-y-1">
                 <p className="font-black text-forest-dark flex items-center gap-1 text-[11px]">
-                  🛒 4. Đổi Quà Tiêu Dùng
+                  ⛏️ 4. Đào Mỏ & Đổi Quà
                 </p>
                 <p className="pl-5 text-gray-600 text-[10.5px] leading-relaxed space-y-1">
-                  • Dùng **Điểm ⭐** để đổi lấy các gói giải trí (thời gian chơi game, TV, xem phim).<br />
-                  • Dùng **Tiền Vàng 🪙** để đổi lấy tiền mặt thật hoặc bỏ heo đất tiết kiệm từ bố mẹ!
+                  • Hoàn thành việc tốt nạp **Năng Lượng ⚡**.<br />
+                  • Đập đá ở **Hang Đào Mỏ ⛏️** nhận **Hero Coin 🪙**.<br />
+                  • Dùng **Điểm ⭐** đổi thời gian chơi TV/game; dùng **Hero Coin 🪙** đổi quà thực tế lớn (kem, Lego)!
                 </p>
               </div>
             </div>
@@ -599,11 +600,11 @@ export default function DashboardPage() {
         </button>
 
         <button
-          onClick={() => router.push("/boss")}
+          onClick={() => router.push("/mining")}
           className="flex flex-col items-center p-2 text-gray-400 hover:text-forest space-y-0.5"
         >
-          <span className="text-xl">👾</span>
-          <span className="text-[9px] font-extrabold uppercase tracking-wider">Boss Tuần</span>
+          <span className="text-xl">⛏️</span>
+          <span className="text-[9px] font-extrabold uppercase tracking-wider">Đào Mỏ</span>
         </button>
 
         <button

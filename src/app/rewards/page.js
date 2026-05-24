@@ -14,16 +14,16 @@ export default function RewardsPage() {
     toggleTimerState,
     screenTimeLeft,
     isTimerActive,
-    gold,
+    heroCoins,
     points,
   } = useGame();
 
   const [selectedReward, setSelectedReward] = useState(null); // Reward to redeem
-  const [shortageReward, setShortageReward] = useState(null); // Reward that child doesn't have enough gold for
+  const [shortageReward, setShortageReward] = useState(null); // Reward that child doesn't have enough coins for
   const [pinInput, setPinInput] = useState(""); // Code to input
   const [errorMessage, setErrorMessage] = useState(""); // Pin error
   const [successMessage, setSuccessMessage] = useState(""); // Success message
-  const [rewardsTab, setRewardsTab] = useState("points"); // "points" or "gold" tab
+  const [rewardsTab, setRewardsTab] = useState("points"); // "points" or "heroCoins" tab
 
   useEffect(() => {
     if (isLoaded && !charName) {
@@ -57,8 +57,8 @@ export default function RewardsPage() {
 
   const handleRedeemClick = (reward) => {
     const cost = reward.cost || 50;
-    if (reward.currency === "gold") {
-      if (gold < cost) {
+    if (reward.currency === "heroCoins") {
+      if (heroCoins < cost) {
         setShortageReward(reward);
         return;
       }
@@ -112,10 +112,10 @@ export default function RewardsPage() {
               <span className="text-[9px] font-black text-forest-dark">{points} ĐIỂM</span>
             </div>
             
-            {/* Gold Wallet */}
+            {/* Hero Coins Wallet */}
             <div className="bg-amber-light border border-amber/30 px-2.5 py-1 rounded-full flex items-center gap-1 shadow-sm">
               <span className="text-xs">🪙</span>
-              <span className="text-[9px] font-black text-amber-dark">{gold} VÀNG</span>
+              <span className="text-[9px] font-black text-amber-dark">{heroCoins} COIN</span>
             </div>
           </div>
         </div>
@@ -167,15 +167,15 @@ export default function RewardsPage() {
             <span>ĐỔI GIẢI TRÍ (ĐIỂM ⭐)</span>
           </button>
           <button
-            onClick={() => setRewardsTab("gold")}
+            onClick={() => setRewardsTab("heroCoins")}
             className={`w-1/2 py-3 px-4 rounded-xl border-2 btn-game-transition flex items-center justify-center gap-1.5 ${
-              rewardsTab === "gold"
+              rewardsTab === "heroCoins"
                 ? "bg-amber border-amber text-white shadow-game-amber"
                 : "bg-white border-transparent text-gray-500 hover:text-amber"
             }`}
           >
-            <span>💰</span>
-            <span>ĐỔI TIỀN MẶT (VÀNG 🪙)</span>
+            <span>🪙</span>
+            <span>ĐỔI QUÀ LỚN (COIN 🪙)</span>
           </button>
         </div>
 
@@ -183,10 +183,10 @@ export default function RewardsPage() {
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-black text-forest-dark uppercase tracking-wider">
-              {rewardsTab === "points" ? "🎮 Gói Giải Trí & Đặc Quyền" : "💰 Gói Quy Đổi Tiền Mặt Thật"}
+              {rewardsTab === "points" ? "🎮 Gói Giải Trí & Đặc Quyền" : "🎁 Gói Đổi Quà Của Bố Mẹ"}
             </h3>
             <span className="text-[9px] font-black text-gray-400 bg-sand px-2 py-0.5 rounded-full uppercase">
-              Ví: {rewardsTab === "points" ? `${points} ⭐` : `${gold} 🪙`}
+              Ví: {rewardsTab === "points" ? `${points} ⭐` : `${heroCoins} 🪙`}
             </span>
           </div>
           
@@ -197,8 +197,8 @@ export default function RewardsPage() {
                 return currency === rewardsTab;
               })
               .map((r) => {
-                const isAffordable = rewardsTab === "gold" ? gold >= r.cost : points >= r.cost;
-                const costSymbol = rewardsTab === "gold" ? "🪙" : "⭐";
+                const isAffordable = rewardsTab === "heroCoins" ? heroCoins >= r.cost : points >= r.cost;
+                const costSymbol = rewardsTab === "heroCoins" ? "🪙" : "⭐";
                 
                 // Set up Rarity colors
                 let rarityText = "Thường ⚙️";
@@ -278,7 +278,7 @@ export default function RewardsPage() {
                         : "bg-sky text-white border-sky shadow-game-sky"
                     }`}
                   >
-                    {isAffordable ? "ĐỔI QUÀ 🗝️" : r.currency === "gold" ? "THIẾU VÀNG 🔒" : "THIẾU ĐIỂM 🔒"}
+                    {isAffordable ? "ĐỔI QUÀ 🗝️" : r.currency === "heroCoins" ? "THIẾU COIN 🔒" : "THIẾU ĐIỂM 🔒"}
                   </button>
                 </div>
               );
@@ -350,12 +350,12 @@ export default function RewardsPage() {
           >
             {/* Mascot */}
             <div className="w-16 h-16 bg-rose-50 border-2 border-terracotta rounded-full mx-auto flex items-center justify-center text-3xl shadow">
-              {shortageReward.currency === "gold" ? "🪙" : "⭐"}
+              {shortageReward.currency === "heroCoins" ? "🪙" : "⭐"}
             </div>
 
             <div className="space-y-1">
               <h3 className="text-sm font-black text-terracotta uppercase tracking-wider">
-                {shortageReward.currency === "gold" ? "Chưa Đủ Tiền Vàng! 🔒" : "Chưa Đủ Điểm Số! 🔒"}
+                {shortageReward.currency === "heroCoins" ? "Chưa Đủ Hero Coin! 🔒" : "Chưa Đủ Điểm Số! 🔒"}
               </h3>
               <p className="text-[10px] text-gray-500">Quốc Bảo ơi, hãy cố gắng thêm chút nữa nhé!</p>
             </div>
@@ -367,26 +367,26 @@ export default function RewardsPage() {
                 <div className="text-center">
                   <p className="text-[9px] text-gray-400 font-extrabold uppercase">Hiện có</p>
                   <p className="text-base font-black text-amber-dark">
-                    {shortageReward.currency === "gold" ? `${gold} 🪙` : `${points} ⭐`}
+                    {shortageReward.currency === "heroCoins" ? `${heroCoins} 🪙` : `${points} ⭐`}
                   </p>
                 </div>
                 <div className="text-xs text-gray-300 font-black">/</div>
                 <div className="text-center">
                   <p className="text-[9px] text-gray-400 font-extrabold uppercase">Yêu cầu</p>
                   <p className="text-base font-black text-forest-medium">
-                    {shortageReward.cost} {shortageReward.currency === "gold" ? "🪙" : "⭐"}
+                    {shortageReward.cost} {shortageReward.currency === "heroCoins" ? "🪙" : "⭐"}
                   </p>
                 </div>
               </div>
               <p className="text-[10px] text-terracotta font-black bg-rose-50 p-2 rounded-xl border border-red-100">
-                Con cần tích lũy thêm {shortageReward.cost - (shortageReward.currency === "gold" ? gold : points)} {shortageReward.currency === "gold" ? "🪙 Tiền Vàng" : "⭐ Điểm"} nữa!
+                Con cần tích lũy thêm {shortageReward.cost - (shortageReward.currency === "heroCoins" ? heroCoins : points)} {shortageReward.currency === "heroCoins" ? "🪙 Hero Coin" : "⭐ Điểm"} nữa!
               </p>
             </div>
 
             <p className="text-[10px] text-gray-400 leading-relaxed font-medium">
-              💡 <strong>Bí quyết anh hùng:</strong> Hãy quay lại màn hình phiêu lưu, hoàn thành thêm các nhiệm vụ ngày
-              {shortageReward.currency === "gold" 
-                ? " việc nhà thực tế để kiếm Tiền Vàng của bố mẹ nhé! 💪" 
+              💡 <strong>Bí quyết anh hùng:</strong> Hãy quay lại màn hình đào mỏ, click đập đá tìm kho báu hoặc làm nhiệm vụ ngày
+              {shortageReward.currency === "heroCoins" 
+                ? " ngoài đời thật để tích lũy thêm Năng Lượng ⚡ đào mỏ nhé! 💪" 
                 : " học tập và tự rèn luyện (để trúng Chí Mạng ⚡ nhân đôi Điểm) nhé! ⭐"
               }
             </p>
@@ -421,11 +421,11 @@ export default function RewardsPage() {
         </button>
 
         <button
-          onClick={() => router.push("/boss")}
+          onClick={() => router.push("/mining")}
           className="flex flex-col items-center p-2 text-gray-400 hover:text-forest space-y-0.5"
         >
-          <span className="text-xl">👾</span>
-          <span className="text-[9px] font-extrabold uppercase tracking-wider">Boss Tuần</span>
+          <span className="text-xl">⛏️</span>
+          <span className="text-[9px] font-extrabold uppercase tracking-wider">Đào Mỏ</span>
         </button>
 
         <button

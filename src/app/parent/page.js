@@ -23,8 +23,8 @@ export default function ParentDashboard() {
     deleteReward,
     sendEncouragement,
     resetDailyTasks,
-    gold,
-    setGold,
+    heroCoins,
+    setHeroCoins,
     points,
     setPoints,
   } = useGame();
@@ -34,9 +34,9 @@ export default function ParentDashboard() {
   const [pinEntry, setPinEntry] = useState("");
   const [pinError, setPinError] = useState("");
 
-  // Gold and Points manual adjustments
-  const [goldAdjustAmount, setGoldAdjustAmount] = useState(20);
-  const [goldAdjustSuccess, setGoldAdjustSuccess] = useState("");
+  // Hero Coins and Points manual adjustments
+  const [heroCoinsAdjustAmount, setHeroCoinsAdjustAmount] = useState(20);
+  const [heroCoinsAdjustSuccess, setHeroCoinsAdjustSuccess] = useState("");
   const [pointsAdjustAmount, setPointsAdjustAmount] = useState(50);
   const [pointsAdjustSuccess, setPointsAdjustSuccess] = useState("");
 
@@ -45,7 +45,7 @@ export default function ParentDashboard() {
   const [taskCategory, setTaskCategory] = useState("discipline");
   const [taskExp, setTaskExp] = useState(20);
   const [taskPoints, setTaskPoints] = useState(20); // default points = exp
-  const [taskGold, setTaskGold] = useState(0); // default gold = 0
+  const [taskEnergy, setTaskEnergy] = useState(15); // default energy = 15
   const [taskIsMandatory, setTaskIsMandatory] = useState(false);
 
   const [rewardTitle, setRewardTitle] = useState("");
@@ -64,20 +64,20 @@ export default function ParentDashboard() {
 
   // Preset task templates for quick selection
   const taskTemplates = [
-    { title: "🧹 Rửa bát chén sạch sẽ", category: "help", exp: 15, points: 15, gold: 2, icon: "🧹" },
-    { title: "✨ Quét & lau nhà gọn gàng", category: "help", exp: 20, points: 20, gold: 3, icon: "✨" },
-    { title: "🌿 Tưới cây & chăm vườn", category: "help", exp: 10, points: 10, gold: 1, icon: "🌿" },
-    { title: "🗑️ Tự giác đi đổ rác", category: "help", exp: 10, points: 10, gold: 1, icon: "🗑️" },
-    { title: "📚 Đọc sách 20 phút", category: "intellect", exp: 25, points: 25, gold: 1, icon: "📚" },
-    { title: "🇬🇧 Học Tiếng Anh 15 phút", category: "intellect", exp: 25, points: 25, gold: 1, icon: "🇬🇧" },
-    { title: "✍️ Hoàn thành bài tập hè", category: "intellect", exp: 30, points: 30, gold: 2, icon: "✍️" },
-    { title: "🛌 Gấp chăn màn gọn gàng", category: "discipline", exp: 15, points: 15, gold: 1, icon: "🛌" },
-    { title: "💤 Đi ngủ trước 22h tối", category: "discipline", exp: 20, points: 20, gold: 1, icon: "💤" },
-    { title: "🦷 Đánh răng đúng giờ", category: "discipline", exp: 10, points: 10, gold: 0, icon: "🦷" },
-    { title: "🏃 Tập thể dục buổi sáng 10p", category: "strength", exp: 20, points: 20, gold: 1, icon: "🏃" },
-    { title: "🪢 Nhảy dây 100 cái liên tục", category: "strength", exp: 15, points: 15, gold: 1, icon: "🪢" },
-    { title: "🎨 Vẽ tranh hoặc tô màu", category: "creative", exp: 20, points: 20, gold: 1, icon: "🎨" },
-    { title: "🎹 Luyện đàn / nhạc cụ 15p", category: "creative", exp: 25, points: 25, gold: 1, icon: "🎹" },
+    { title: "🧹 Rửa bát chén sạch sẽ", category: "help", exp: 15, points: 15, energy: 15, icon: "🧹" },
+    { title: "✨ Quét & lau nhà gọn gàng", category: "help", exp: 20, points: 20, energy: 20, icon: "✨" },
+    { title: "🌿 Tưới cây & chăm vườn", category: "help", exp: 10, points: 10, energy: 10, icon: "🌿" },
+    { title: "🗑️ Tự giác đi đổ rác", category: "help", exp: 10, points: 10, energy: 10, icon: "🗑️" },
+    { title: "📚 Đọc sách 20 phút", category: "intellect", exp: 25, points: 25, energy: 20, icon: "📚" },
+    { title: "🇬🇧 Học Tiếng Anh 15 phút", category: "intellect", exp: 25, points: 25, energy: 20, icon: "🇬🇧" },
+    { title: "✍️ Hoàn thành bài tập hè", category: "intellect", exp: 30, points: 30, energy: 25, icon: "✍️" },
+    { title: "🛌 Gấp chăn màn gọn gàng", category: "discipline", exp: 15, points: 15, energy: 10, icon: "🛌" },
+    { title: "💤 Đi ngủ trước 22h tối", category: "discipline", exp: 20, points: 20, energy: 15, icon: "💤" },
+    { title: "🦷 Đánh răng đúng giờ", category: "discipline", exp: 10, points: 10, energy: 10, icon: "🦷" },
+    { title: "🏃 Tập thể dục buổi sáng 10p", category: "strength", exp: 20, points: 20, energy: 20, icon: "🏃" },
+    { title: "🪢 Nhảy dây 100 cái liên tục", category: "strength", exp: 15, points: 15, energy: 15, icon: "🪢" },
+    { title: "🎨 Vẽ tranh hoặc tô màu", category: "creative", exp: 20, points: 20, energy: 15, icon: "🎨" },
+    { title: "🎹 Luyện đàn / nhạc cụ 15p", category: "creative", exp: 25, points: 25, energy: 20, icon: "🎹" },
   ];
 
   const applyTaskTemplate = (template) => {
@@ -86,7 +86,7 @@ export default function ParentDashboard() {
     setTaskCategory(template.category);
     setTaskExp(template.exp);
     setTaskPoints(template.points);
-    setTaskGold(template.gold);
+    setTaskEnergy(template.energy);
   };
 
   useEffect(() => {
@@ -120,9 +120,9 @@ export default function ParentDashboard() {
     e.preventDefault();
     if (!taskTitle.trim()) return;
 
-    addCustomTask(taskTitle, taskExp, taskCategory, taskIsMandatory, taskPoints, taskGold);
+    addCustomTask(taskTitle, taskExp, taskCategory, taskIsMandatory, taskPoints, taskEnergy);
     setTaskTitle("");
-    setTaskGold(0);
+    setTaskEnergy(15);
     setTaskIsMandatory(false);
     alert("Đã thêm nhiệm vụ mới thành công! ✅");
   };
@@ -137,17 +137,17 @@ export default function ParentDashboard() {
     alert("Đã thêm phần thưởng mới thành công! ✅");
   };
 
-  // Adjust gold manually
-  const handleAdjustGold = (type) => {
-    if (goldAdjustAmount <= 0) return;
+  // Adjust heroCoins manually
+  const handleAdjustHeroCoins = (type) => {
+    if (heroCoinsAdjustAmount <= 0) return;
     if (type === "add") {
-      setGold((prev) => prev + goldAdjustAmount);
-      setGoldAdjustSuccess(`Đã thưởng nóng +${goldAdjustAmount} 🪙 Tiền Vàng cho Quốc Bảo! 🎉`);
+      setHeroCoins((prev) => prev + heroCoinsAdjustAmount);
+      setHeroCoinsAdjustSuccess(`Đã thưởng nóng +${heroCoinsAdjustAmount} 🪙 Hero Coins cho Quốc Bảo! 🎉`);
     } else {
-      setGold((prev) => Math.max(0, prev - goldAdjustAmount));
-      setGoldAdjustSuccess(`Đã phạt trừ -${goldAdjustAmount} 🪙 Tiền Vàng của Quốc Bảo! ⚠️`);
+      setHeroCoins((prev) => Math.max(0, prev - heroCoinsAdjustAmount));
+      setHeroCoinsAdjustSuccess(`Đã phạt trừ -${heroCoinsAdjustAmount} 🪙 Hero Coins của Quốc Bảo! ⚠️`);
     }
-    setTimeout(() => setGoldAdjustSuccess(""), 3500);
+    setTimeout(() => setHeroCoinsAdjustSuccess(""), 3500);
   };
 
   // Adjust points manually
@@ -344,36 +344,36 @@ export default function ParentDashboard() {
               {pointsAdjustSuccess && <p className="text-[8px] font-bold text-center text-forest animate-pulse">{pointsAdjustSuccess}</p>}
             </div>
 
-            {/* Gold adjustment */}
+            {/* Hero Coin adjustment */}
             <div className="space-y-2">
               <div className="flex items-center justify-between text-xs">
-                <span className="font-bold text-gray-500 flex items-center gap-0.5">🪙 Tiền Vàng (Tiền mặt thật):</span>
-                <span className="font-black text-amber-dark">{gold} 🪙</span>
+                <span className="font-bold text-gray-500 flex items-center gap-0.5">🪙 Hero Coins (Đào từ quặng ma thuật):</span>
+                <span className="font-black text-amber-dark">{heroCoins} 🪙</span>
               </div>
               <div className="flex gap-2">
                 <input
                   type="number"
-                  value={goldAdjustAmount}
-                  onChange={(e) => setGoldAdjustAmount(Math.max(0, parseInt(e.target.value) || 0))}
+                  value={heroCoinsAdjustAmount}
+                  onChange={(e) => setHeroCoinsAdjustAmount(Math.max(0, parseInt(e.target.value) || 0))}
                   className="w-1/2 bg-white border border-sand rounded-xl px-3 py-1.5 text-xs font-bold text-forest-dark focus:outline-none"
                   min={0}
                 />
                 <button
                   type="button"
-                  onClick={() => handleAdjustGold("add")}
+                  onClick={() => handleAdjustHeroCoins("add")}
                   className="w-1/4 bg-forest text-sand-light font-black text-[9px] py-1.5 rounded-xl border-2 border-forest shadow-game-forest btn-game-transition active:shadow-game-pressed"
                 >
                   + THƯỞNG
                 </button>
                 <button
                   type="button"
-                  onClick={() => handleAdjustGold("sub")}
+                  onClick={() => handleAdjustHeroCoins("sub")}
                   className="w-1/4 bg-terracotta text-white font-black text-[9px] py-1.5 rounded-xl border-2 border-terracotta shadow-game-terracotta btn-game-transition active:shadow-game-pressed"
                 >
                   - PHẠT
                 </button>
               </div>
-              {goldAdjustSuccess && <p className="text-[8px] font-bold text-center text-forest animate-pulse">{goldAdjustSuccess}</p>}
+              {heroCoinsAdjustSuccess && <p className="text-[8px] font-bold text-center text-forest animate-pulse">{heroCoinsAdjustSuccess}</p>}
             </div>
           </div>
         </div>
@@ -430,35 +430,35 @@ export default function ParentDashboard() {
                 <optgroup label="🤝 Việc Nhà / Giúp Đỡ">
                   {taskTemplates.filter(t => t.category === "help").map((t, idx) => (
                     <option key={t.title} value={taskTemplates.indexOf(t)}>
-                      {t.icon} {t.title} (EXP: {t.exp} | ⭐: {t.points} | 🪙: {t.gold})
+                      {t.icon} {t.title} (EXP: {t.exp} | ⭐: {t.points} | ⚡: {t.energy})
                     </option>
                   ))}
                 </optgroup>
                 <optgroup label="🧠 Học Tập / Trí Tuệ">
                   {taskTemplates.filter(t => t.category === "intellect").map((t, idx) => (
                     <option key={t.title} value={taskTemplates.indexOf(t)}>
-                      {t.icon} {t.title} (EXP: {t.exp} | ⭐: {t.points} | 🪙: {t.gold})
+                      {t.icon} {t.title} (EXP: {t.exp} | ⭐: {t.points} | ⚡: {t.energy})
                     </option>
                   ))}
                 </optgroup>
                 <optgroup label="⚡ Tự Lập / Kỷ Luật">
                   {taskTemplates.filter(t => t.category === "discipline").map((t, idx) => (
                     <option key={t.title} value={taskTemplates.indexOf(t)}>
-                      {t.icon} {t.title} (EXP: {t.exp} | ⭐: {t.points} | 🪙: {t.gold})
+                      {t.icon} {t.title} (EXP: {t.exp} | ⭐: {t.points} | ⚡: {t.energy})
                     </option>
                   ))}
                 </optgroup>
                 <optgroup label="❤️ Sức Khỏe / Thể Lực">
                   {taskTemplates.filter(t => t.category === "strength").map((t, idx) => (
                     <option key={t.title} value={taskTemplates.indexOf(t)}>
-                      {t.icon} {t.title} (EXP: {t.exp} | ⭐: {t.points} | 🪙: {t.gold})
+                      {t.icon} {t.title} (EXP: {t.exp} | ⭐: {t.points} | ⚡: {t.energy})
                     </option>
                   ))}
                 </optgroup>
                 <optgroup label="🎨 Năng Khiếu / Sáng Tạo">
                   {taskTemplates.filter(t => t.category === "creative").map((t, idx) => (
                     <option key={t.title} value={taskTemplates.indexOf(t)}>
-                      {t.icon} {t.title} (EXP: {t.exp} | ⭐: {t.points} | 🪙: {t.gold})
+                      {t.icon} {t.title} (EXP: {t.exp} | ⭐: {t.points} | ⚡: {t.energy})
                     </option>
                   ))}
                 </optgroup>
@@ -550,11 +550,11 @@ export default function ParentDashboard() {
               </div>
 
               <div className="space-y-1">
-                <label className="text-[9px] font-bold text-gray-500 uppercase tracking-wide">Tiền Vàng 🪙 (Đổi Tiền Thật)</label>
+                <label className="text-[9px] font-bold text-gray-500 uppercase tracking-wide">Năng Lượng Thưởng ⚡ (Đào xu)</label>
                 <input
                   type="number"
-                  value={taskGold}
-                  onChange={(e) => setTaskGold(Math.max(0, parseInt(e.target.value) || 0))}
+                  value={taskEnergy}
+                  onChange={(e) => setTaskEnergy(Math.max(0, parseInt(e.target.value) || 0))}
                   className="w-full bg-white border border-sand rounded-xl px-3 py-2 text-xs font-bold text-forest-dark focus:outline-none"
                   min={0}
                   required
@@ -690,7 +690,7 @@ export default function ParentDashboard() {
                   className="w-full bg-white border border-sand rounded-xl p-2 text-xs font-bold text-forest-dark focus:outline-none"
                 >
                   <option value="points">Điểm Tích Lũy ⭐</option>
-                  <option value="gold">Tiền Vàng 🪙</option>
+                  <option value="heroCoins">Hero Coins 🪙</option>
                 </select>
               </div>
             </div>
@@ -737,7 +737,7 @@ export default function ParentDashboard() {
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-[9px] bg-white border border-sand rounded px-1.5 py-0.5 text-gray-500 font-extrabold uppercase">
-                      {r.cost} vàng 🪙
+                      {r.cost} {r.currency === "heroCoins" ? "coins 🪙" : "điểm ⭐"}
                     </span>
                     <button
                       onClick={() => {
@@ -822,33 +822,35 @@ export default function ParentDashboard() {
             <div className="text-left space-y-3.5 text-xs text-forest-dark font-medium bg-sand-light p-4 rounded-2xl border border-sand">
               <div className="space-y-1.5">
                 <p className="font-black text-forest flex items-center gap-1 text-[11px]">
-                  ⭐ 1. Cân Bằng Ví Kép (Điểm vs Vàng)
+                  ⚡ 1. Hệ Thống Năng Lượng & Đào Mỏ
                 </p>
                 <p className="pl-5 text-gray-600 text-[10px] leading-relaxed">
-                  • <strong>Điểm ⭐ (Giải trí):</strong> Hãy cho bé Điểm hào phóng khi hoàn thành bài tập, giữ kỷ luật. Điểm này dùng để bé mua thời gian chơi game, TV, tạo động lực ngắn hạn.
+                  • <strong>Năng Lượng ⚡:</strong> Khi con hoàn thành nhiệm vụ hằng ngày sẽ nhận được Năng Lượng (tối đa 100 ⚡). Năng Lượng dùng để đào mỏ ngẫu nhiên nhận Hero Coin 🪙.
                 </p>
                 <p className="pl-5 text-gray-600 text-[10px] leading-relaxed">
-                  • <strong>Tiền Vàng 🪙 (Tiền thật):</strong> Chỉ tặng Tiền Vàng giới hạn khi bé giúp đỡ việc nhà thực tế (rửa bát, quét nhà). 10 Vàng = 10k hoặc 20k tiền mặt thật tùy bố mẹ quy ước. Việc này dạy bé giá trị của lao động chân tay.
+                  • <strong>Bùa Lợi Đào Mỏ:</strong> Con làm thói quen tốt như đọc sách hay thể dục sẽ được buff tăng tỷ lệ đồ quý hoặc nhân đôi coin trong Hang Đào Mỏ!
                 </p>
               </div>
 
               <div className="space-y-1.5">
                 <p className="font-black text-amber-dark flex items-center gap-1 text-[11px]">
-                  ➕ 2. Cách Tạo Nhiệm Vụ Mới
+                  ⭐ 2. Cân Bằng Ví Kép (Điểm vs Hero Coin)
                 </p>
                 <p className="pl-5 text-gray-600 text-[10px] leading-relaxed">
-                  • Bố mẹ gõ tên nhiệm vụ hoặc sử dụng <strong>Dropdown Gợi Ý Mẫu</strong> để tự động điền form cực nhanh.<br />
-                  • Có thể tích chọn <strong>Bắt buộc 🔴</strong> nếu đây là việc ngày nào con cũng phải làm (ví dụ: đánh răng, học bài).
+                  • <strong>Điểm ⭐ (Giải trí):</strong> Nhận trực tiếp từ nhiệm vụ, dùng để đổi thời gian chơi game, TV, tạo động lực ngắn hạn cho con.
+                </p>
+                <p className="pl-5 text-gray-600 text-[10px] leading-relaxed">
+                  • <strong>Hero Coin 🪙 (Quà lớn):</strong> Đào từ quặng ma thuật, dùng để con tích lũy đổi quà lớn ngoài đời thực (kem, đồ chơi, Lego).
                 </p>
               </div>
 
               <div className="space-y-1.5">
                 <p className="font-black text-terracotta flex items-center gap-1 text-[11px]">
-                  🎁 3. Thiết Lập Quà Tặng & Duyệt Quà
+                  🎁 3. Tạo Nhiệm Vụ & Duyệt Đổi Quà
                 </p>
                 <p className="pl-5 text-gray-600 text-[10px] leading-relaxed">
-                  • Khi tạo quà, bố mẹ chọn <strong>Ví Thanh Toán</strong> (Ví dụ: Thẻ xem TV đổi bằng Điểm ⭐, Nhận 50k tiền mặt đổi bằng Vàng 🪙).<br />
-                  • Khi con bấm {"'Đổi quà'"}, bố mẹ sẽ phải nhập mã PIN để duyệt và thực hiện trao quà thực tế cho con ngoài đời.
+                  • Bố mẹ tạo việc tặng Năng Lượng ⚡ tương ứng và thiết lập quà đổi bằng Điểm ⭐ hoặc Hero Coin 🪙.<br />
+                  • Khi con bấm {"'Đổi quà'"}, bố mẹ nhập mã PIN để xác nhận trao quà thực tế cho con.
                 </p>
               </div>
 
@@ -857,8 +859,8 @@ export default function ParentDashboard() {
                   🔄 4. Đặt Lại Ngày Mới (Reset Ngày)
                 </p>
                 <p className="pl-5 text-gray-600 text-[10px] leading-relaxed">
-                  • Mỗi tối trước khi đi ngủ hoặc sáng sớm, bố mẹ bấm nút <strong>{"'Giả lập kích hoạt ngày mới'"}</strong> để làm mới danh sách việc ngày cho con.<br />
-                  • Nếu ngày hôm đó con làm tốt từ 3 việc trở lên, ngọn lửa <strong>Streak 🔥</strong> của con sẽ tăng lên!
+                  • Cuối ngày hoặc sáng sớm, bố mẹ bấm <strong>{"'Giả lập kích hoạt ngày mới'"}</strong> để làm mới việc ngày.<br />
+                  • Nếu ngày hôm đó con làm tốt từ 3 việc trở lên, ngọn lửa <strong>Streak 🔥</strong> sẽ tăng và cộng thêm may mắn khi đào mỏ!
                 </p>
               </div>
             </div>
@@ -893,11 +895,11 @@ export default function ParentDashboard() {
         </button>
 
         <button
-          onClick={() => router.push("/boss")}
+          onClick={() => router.push("/mining")}
           className="flex flex-col items-center p-2 text-gray-400 hover:text-forest space-y-0.5"
         >
-          <span className="text-xl">👾</span>
-          <span className="text-[9px] font-extrabold uppercase tracking-wider">Boss Tuần</span>
+          <span className="text-xl">⛏️</span>
+          <span className="text-[9px] font-extrabold uppercase tracking-wider">Đào Mỏ</span>
         </button>
 
         <button
