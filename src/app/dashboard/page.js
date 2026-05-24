@@ -21,11 +21,15 @@ export default function DashboardPage() {
     completeTask,
     encouragements,
     readAllMessages,
+    gold,
+    lastGoldGain,
+    setLastGoldGain,
   } = useGame();
 
   const [activeTab, setActiveTab] = useState("adventure"); // Current bottom navigation tab
   const [taskFilter, setTaskFilter] = useState("all"); // Filter daily tasks
   const [selectedMessage, setSelectedMessage] = useState(null); // Pigeon Modal Message
+  const [criticalToast, setCriticalToast] = useState(null); // Toast for Critical Hit Gold!
 
   // Redirect if character doesn't exist (no name)
   useEffect(() => {
@@ -33,6 +37,28 @@ export default function DashboardPage() {
       router.push("/");
     }
   }, [isLoaded, charName, router]);
+
+  // Listener for Critical Gold Gain
+  useEffect(() => {
+    if (lastGoldGain) {
+      if (lastGoldGain.isCritical) {
+        setCriticalToast({
+          amount: lastGoldGain.amount,
+          taskTitle: lastGoldGain.taskTitle,
+        });
+        
+        // Auto dismiss after 4 seconds
+        const timer = setTimeout(() => {
+          setCriticalToast(null);
+          setLastGoldGain(null);
+        }, 4000);
+        return () => clearTimeout(timer);
+      } else {
+        // Just clear normal gains, no big modal needed
+        setLastGoldGain(null);
+      }
+    }
+  }, [lastGoldGain, setLastGoldGain]);
 
   if (!isLoaded) {
     return (
@@ -129,30 +155,38 @@ export default function DashboardPage() {
       {/* Scrollable Main Area */}
       <div className="flex-grow p-5 space-y-5 overflow-y-auto">
         
-        {/* TOP STATUS BAR: Streak, Energy, Pigeon Letter */}
-        <div className="flex items-center justify-between">
+        {/* TOP STATUS BAR: Streak, Energy, Gold Wallet, Pigeon Letter */}
+        <div className="flex items-center justify-between gap-2">
           {/* Energy Bar */}
-          <div className="flex items-center gap-2 bg-white border-2 border-sand px-3 py-1.5 rounded-full shadow-game-flat">
-            <span className="text-sm">❤️</span>
-            <div className="w-16 bg-gray-200 h-2.5 rounded-full overflow-hidden">
+          <div className="flex items-center gap-1 bg-white border-2 border-sand px-2.5 py-1.5 rounded-full shadow-game-flat">
+            <span className="text-xs">❤️</span>
+            <div className="w-10 bg-gray-200 h-2 rounded-full overflow-hidden">
               <div 
                 className="bg-terracotta h-full transition-all duration-300"
                 style={{ width: `${energy}%` }}
               ></div>
             </div>
-            <span className="text-[10px] font-black text-forest-dark">{energy}/100</span>
+          </div>
+
+          {/* Gold Wallet */}
+          <div 
+            onClick={() => router.push("/rewards")}
+            className="flex items-center gap-1 bg-white border-2 border-sand px-2.5 py-1.5 rounded-full shadow-game-flat transition-all hover:border-amber cursor-pointer active:scale-95 select-none"
+          >
+            <span className="text-xs animate-bounce">🪙</span>
+            <span className="text-[10px] font-black text-amber-dark">{gold} VÀNG</span>
           </div>
 
           {/* Messages Bird (Carrier Pigeon Alert) */}
           {encouragements.length > 0 && (
             <button
               onClick={() => handleOpenLetter(encouragements[0])}
-              className="relative p-2.5 bg-white border-2 border-sand rounded-full shadow-game-flat hover:border-amber transition-colors animate-float"
+              className="relative p-1.5 bg-white border-2 border-sand rounded-full shadow-game-flat hover:border-amber transition-colors"
               title="Thư động viên từ bố mẹ!"
             >
-              <span className="text-lg">🕊️</span>
+              <span className="text-sm">🕊️</span>
               {unreadLetters.length > 0 && (
-                <span className="absolute -top-1 -right-1 bg-terracotta text-white font-extrabold text-[8px] h-4 w-4 rounded-full flex items-center justify-center border-2 border-white animate-pulse">
+                <span className="absolute -top-1 -right-1 bg-terracotta text-white font-extrabold text-[7px] h-3.5 w-3.5 rounded-full flex items-center justify-center border border-white animate-pulse">
                   !
                 </span>
               )}
@@ -160,9 +194,9 @@ export default function DashboardPage() {
           )}
 
           {/* Streak Flame */}
-          <div className="flex items-center gap-1.5 bg-white border-2 border-sand px-3 py-1.5 rounded-full shadow-game-flat">
-            <span className="text-base animate-flame">🔥</span>
-            <span className="text-xs font-black text-amber">{streak} NGÀY</span>
+          <div className="flex items-center gap-1 bg-white border-2 border-sand px-2.5 py-1.5 rounded-full shadow-game-flat">
+            <span className="text-sm animate-flame">🔥</span>
+            <span className="text-[10px] font-black text-amber">{streak} NGÀY</span>
           </div>
         </div>
 
@@ -415,6 +449,45 @@ export default function DashboardPage() {
               className="w-full bg-amber text-sand-light font-black text-sm py-3 px-6 rounded-2xl border-2 border-amber shadow-game-amber btn-game-transition active:shadow-game-pressed"
             >
               CÁM ƠN BỐ MẸ! ❤️
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Critical Hit Confetti Toast Modal */}
+      {criticalToast && (
+        <div className="absolute inset-0 bg-black/40 flex items-center justify-center p-6 z-50 animate-fade-in">
+          <div className="bg-amber border-4 border-amber-dark rounded-3xl p-6 shadow-2xl w-full max-w-sm text-center space-y-4 relative overflow-hidden animate-scale-up">
+            {/* Sparkle background elements */}
+            <div className="absolute -top-10 -left-10 w-24 h-24 bg-white/10 rounded-full blur-xl"></div>
+            <div className="absolute -bottom-10 -right-10 w-24 h-24 bg-white/10 rounded-full blur-xl"></div>
+
+            {/* Lucky mascot animation */}
+            <div className="w-20 h-20 bg-white/20 rounded-full border-4 border-white mx-auto flex items-center justify-center text-4xl shadow-lg animate-bounce select-none">
+              ⚡
+            </div>
+
+            <div className="space-y-1 text-white">
+              <h3 className="text-lg font-black tracking-widest uppercase animate-pulse">CHÍ MẠNG CRITICAL!</h3>
+              <p className="text-[10px] opacity-90 font-bold uppercase tracking-wider">Quốc Bảo đã kích hoạt may mắn 🌟</p>
+            </div>
+
+            <div className="bg-white border-2 border-amber-dark p-4 rounded-2xl shadow-inner space-y-1">
+              <p className="text-[10px] text-gray-400 font-extrabold uppercase">Nhận Thưởng Nhiệm Vụ</p>
+              <p className="text-xs font-black text-forest-dark truncate px-2">{criticalToast.taskTitle}</p>
+              <div className="text-3xl font-black text-amber-dark flex items-center justify-center gap-1.5 py-1">
+                <span>+ {criticalToast.amount}</span>
+                <span className="text-2xl">🪙</span>
+              </div>
+              <p className="text-[9px] text-forest font-bold uppercase tracking-wider">Đã nhân đôi Tiền Vàng và hệ số Streak! 🎉</p>
+            </div>
+
+            {/* Close Button */}
+            <button
+              onClick={() => setCriticalToast(null)}
+              className="w-full bg-white text-amber-dark font-black text-xs py-3 px-6 rounded-xl border-2 border-white shadow-game-flat hover:bg-amber-light btn-game-transition active:shadow-game-pressed"
+            >
+              QUÁ TUYỆT VỜI! 🚀
             </button>
           </div>
         </div>

@@ -23,12 +23,18 @@ export default function ParentDashboard() {
     deleteReward,
     sendEncouragement,
     resetDailyTasks,
+    gold,
+    setGold,
   } = useGame();
 
   // Authentication Gate State
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [pinEntry, setPinEntry] = useState("");
   const [pinError, setPinError] = useState("");
+
+  // Gold manual adjustments
+  const [goldAdjustAmount, setGoldAdjustAmount] = useState(20);
+  const [goldAdjustSuccess, setGoldAdjustSuccess] = useState("");
 
   // CRUD Forms States
   const [taskTitle, setTaskTitle] = useState("");
@@ -40,6 +46,7 @@ export default function ParentDashboard() {
   const [rewardCost, setRewardCost] = useState(50);
   const [rewardType, setRewardType] = useState("perk");
   const [rewardMinutes, setRewardMinutes] = useState(20);
+  const [rewardRarity, setRewardRarity] = useState("rare");
 
   const [encouragementText, setEncouragementText] = useState("");
   const [messageSuccess, setMessageSuccess] = useState(false);
@@ -89,9 +96,22 @@ export default function ParentDashboard() {
     e.preventDefault();
     if (!rewardTitle.trim()) return;
 
-    addCustomReward(rewardTitle, rewardCost, rewardType, rewardMinutes);
+    addCustomReward(rewardTitle, rewardCost, rewardType, rewardMinutes, rewardRarity);
     setRewardTitle("");
     alert("Đã thêm phần thưởng mới thành công! ✅");
+  };
+
+  // Adjust gold manually
+  const handleAdjustGold = (type) => {
+    if (goldAdjustAmount <= 0) return;
+    if (type === "add") {
+      setGold((prev) => prev + goldAdjustAmount);
+      setGoldAdjustSuccess(`Đã thưởng nóng +${goldAdjustAmount} 🪙 Tiền Vàng cho Quốc Bảo! 🎉`);
+    } else {
+      setGold((prev) => Math.max(0, prev - goldAdjustAmount));
+      setGoldAdjustSuccess(`Đã phạt trừ -${goldAdjustAmount} 🪙 Tiền Vàng của Quốc Bảo! ⚠️`);
+    }
+    setTimeout(() => setGoldAdjustSuccess(""), 3500);
   };
 
   // Send pigeon message
@@ -224,6 +244,45 @@ export default function ParentDashboard() {
                 </div>
               );
             })}
+          </div>
+
+          {/* GOLD ADJUSTMENT PANEL FOR PARENT */}
+          <div className="bg-sand-light border-2 border-sand p-3.5 rounded-2xl space-y-3 mt-4">
+            <div className="text-[10px] font-black text-amber-dark uppercase tracking-wider flex items-center gap-1 select-none">
+              <span>🪙</span>
+              <span>Quản Lý Tiền Vàng Của Con</span>
+            </div>
+            
+            <div className="flex items-center justify-between bg-white border border-sand px-3 py-2 rounded-xl">
+              <span className="text-[10px] font-bold text-gray-500">Ví hiện tại của Quốc Bảo:</span>
+              <span className="text-xs font-black text-amber-dark flex items-center gap-0.5">{gold} 🪙</span>
+            </div>
+
+            <div className="flex gap-2">
+              <input
+                type="number"
+                value={goldAdjustAmount}
+                onChange={(e) => setGoldAdjustAmount(Math.max(0, parseInt(e.target.value) || 0))}
+                placeholder="Nhập lượng vàng..."
+                className="w-1/2 bg-white border border-sand rounded-xl px-3 py-2 text-xs font-bold text-forest-dark focus:outline-none"
+                min={0}
+              />
+              <button
+                type="button"
+                onClick={() => handleAdjustGold("add")}
+                className="w-1/4 bg-forest text-sand-light font-black text-[10px] py-2 rounded-xl border-2 border-forest shadow-game-forest btn-game-transition active:shadow-game-pressed"
+              >
+                + THƯỞNG
+              </button>
+              <button
+                type="button"
+                onClick={() => handleAdjustGold("sub")}
+                className="w-1/4 bg-terracotta text-white font-black text-[10px] py-2 rounded-xl border-2 border-terracotta shadow-game-terracotta btn-game-transition active:shadow-game-pressed"
+              >
+                - PHẠT
+              </button>
+            </div>
+            {goldAdjustSuccess && <p className="text-[9px] font-bold text-center text-forest animate-pulse">{goldAdjustSuccess}</p>}
           </div>
         </div>
 
@@ -406,18 +465,34 @@ export default function ParentDashboard() {
               </div>
             </div>
 
-            {rewardType === "game_time" && (
-              <div className="space-y-1 text-xs">
-                <label className="text-[9px] font-bold text-gray-500 uppercase tracking-wide">Số Phút Mở Khóa Đếm Ngược</label>
-                <input
-                  type="number"
-                  value={rewardMinutes}
-                  onChange={(e) => setRewardMinutes(e.target.value)}
-                  className="w-full bg-white border border-sand rounded-xl px-3 py-2 text-xs font-bold text-forest-dark focus:outline-none focus:border-forest"
-                  min={5}
-                />
+            <div className="grid grid-cols-2 gap-3 text-xs">
+              <div className="space-y-1">
+                <label className="text-[9px] font-bold text-gray-500 uppercase tracking-wide">Độ Hiếm Quà</label>
+                <select
+                  value={rewardRarity}
+                  onChange={(e) => setRewardRarity(e.target.value)}
+                  className="w-full bg-white border border-sand rounded-xl p-2 text-xs font-bold text-forest-dark focus:outline-none"
+                >
+                  <option value="common">Thường ⚙️</option>
+                  <option value="rare">Hiếm 🔷</option>
+                  <option value="epic">Sử Thi 👑</option>
+                  <option value="legendary">Huyền Thoại ⚡</option>
+                </select>
               </div>
-            )}
+
+              {rewardType === "game_time" && (
+                <div className="space-y-1">
+                  <label className="text-[9px] font-bold text-gray-500 uppercase tracking-wide">Số Phút Mở Khóa</label>
+                  <input
+                    type="number"
+                    value={rewardMinutes}
+                    onChange={(e) => setRewardMinutes(e.target.value)}
+                    className="w-full bg-white border border-sand rounded-xl px-3 py-2 text-xs font-bold text-forest-dark focus:outline-none focus:border-forest"
+                    min={5}
+                  />
+                </div>
+              )}
+            </div>
 
             <button
               type="submit"
@@ -431,30 +506,40 @@ export default function ParentDashboard() {
           <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
             <div className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Danh Sách Quà Hiện Tại:</div>
             
-            {rewards.map((r) => (
-              <div 
-                key={r.id} 
-                className="bg-sand-light border border-sand p-2.5 rounded-xl flex items-center justify-between text-xs font-bold text-forest-dark gap-2"
-              >
-                <span className="truncate max-w-[180px]">{r.title}</span>
-                <div className="flex items-center gap-2">
-                  <span className="text-[9px] bg-white border border-sand rounded px-1.5 py-0.5 text-gray-500 font-extrabold uppercase">
-                    {r.cost} điểm
-                  </span>
-                  <button
-                    onClick={() => {
-                      if (confirm(`Bố mẹ chắc chắn muốn xóa phần thưởng này chứ?`)) {
-                        deleteReward(r.id);
-                      }
-                    }}
-                    className="text-terracotta hover:text-red-700 text-sm p-1.5"
-                    title="Xóa phần thưởng"
-                  >
-                    🗑️
-                  </button>
+            {rewards.map((r) => {
+              let rarityLabel = "Thường ⚙️";
+              if (r.rarity === "rare") rarityLabel = "Hiếm 🔷";
+              if (r.rarity === "epic") rarityLabel = "Sử Thi 👑";
+              if (r.rarity === "legendary") rarityLabel = "Huyền Thoại ⚡";
+
+              return (
+                <div 
+                  key={r.id} 
+                  className="bg-sand-light border border-sand p-2.5 rounded-xl flex items-center justify-between text-xs font-bold text-forest-dark gap-2"
+                >
+                  <div className="flex flex-col truncate">
+                    <span className="truncate max-w-[150px]">{r.title}</span>
+                    <span className="text-[8px] font-black text-gray-400 uppercase tracking-wide">{rarityLabel}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[9px] bg-white border border-sand rounded px-1.5 py-0.5 text-gray-500 font-extrabold uppercase">
+                      {r.cost} vàng 🪙
+                    </span>
+                    <button
+                      onClick={() => {
+                        if (confirm(`Bố mẹ chắc chắn muốn xóa phần thưởng này chứ?`)) {
+                          deleteReward(r.id);
+                        }
+                      }}
+                      className="text-terracotta hover:text-red-700 text-sm p-1.5"
+                      title="Xóa phần thưởng"
+                    >
+                      🗑️
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 

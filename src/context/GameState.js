@@ -19,11 +19,11 @@ const DEFAULT_TASKS = [
 ];
 
 const DEFAULT_REWARDS = [
-  { id: "r1", title: "Đổi 20 phút chơi game / xem TV 📺", cost: 40, type: "game_time", value: 20, parentApproved: false },
-  { id: "r2", title: "Đổi 45 phút chơi game / xem TV 🚀", cost: 80, type: "game_time", value: 45, parentApproved: false },
-  { id: "r3", title: "Bố mẹ nấu món ăn Quốc Bảo yêu thích 🍕", cost: 100, type: "perk", value: "favorite_meal", parentApproved: false },
-  { id: "r4", title: "Một ngày đi chơi công viên nước cùng cả nhà 🎡", cost: 200, type: "perk", value: "special_day", parentApproved: false },
-  { id: "r5", title: "Thẻ bài miễn làm 1 nhiệm vụ ngày 🎟️", cost: 150, type: "card", value: "skip_task", parentApproved: false },
+  { id: "r1", title: "Đổi 20 phút chơi game / xem TV 📺", cost: 40, type: "game_time", value: 20, parentApproved: false, rarity: "common" },
+  { id: "r2", title: "Đổi 45 phút chơi game / xem TV 🚀", cost: 80, type: "game_time", value: 45, parentApproved: false, rarity: "common" },
+  { id: "r3", title: "Bố mẹ nấu món ăn Quốc Bảo yêu thích 🍕", cost: 120, type: "perk", value: "favorite_meal", parentApproved: false, rarity: "rare" },
+  { id: "r4", title: "Một ngày đi chơi công viên nước cùng cả nhà 🎡", cost: 300, type: "perk", value: "special_day", parentApproved: false, rarity: "epic" },
+  { id: "r5", title: "Thẻ bài miễn làm 1 nhiệm vụ ngày 🎟️", cost: 200, type: "card", value: "skip_task", parentApproved: false, rarity: "legendary" },
 ];
 
 export function GameProvider({ children }) {
@@ -45,6 +45,10 @@ export function GameProvider({ children }) {
     creative: 10,   // 🎨 Sáng tạo
     help: 10,       // 🤝 Giúp đỡ
   });
+  
+  // Gold (Tiền Vàng) & Lucky Reward system
+  const [gold, setGold] = useState(0);
+  const [lastGoldGain, setLastGoldGain] = useState(null); // { amount, isCritical, taskTitle, timestamp }
 
   // Lists state
   const [tasks, setTasks] = useState(DEFAULT_TASKS);
@@ -136,6 +140,7 @@ export function GameProvider({ children }) {
         setParentPin(data.parentPin || "1234");
         setEncouragements(data.encouragements || []);
         setLastResetDate(data.lastResetDate || "");
+        setGold(data.gold || 0);
       } catch (e) {
         console.error("Error loading local state", e);
       }
@@ -164,6 +169,7 @@ export function GameProvider({ children }) {
         parentPin,
         encouragements,
         lastResetDate,
+        gold,
       };
       localStorage.setItem("quocbao_game_state", JSON.stringify(data));
     }
@@ -186,6 +192,7 @@ export function GameProvider({ children }) {
     parentPin,
     encouragements,
     lastResetDate,
+    gold,
   ]);
 
   // Bulletproof Absolute Timer Tick
@@ -268,6 +275,49 @@ export function GameProvider({ children }) {
             setLevel(currentLevel);
             setEnergy((prev) => Math.min(100, prev + 5));
 
+            // Gold and Critical Hit & Streak Multiplier calculation
+            const isCritical = Math.random() < 0.15; // 15% chance for Critical Hit
+            let baseGold = t.exp;
+            if (isCritical) {
+              baseGold = baseGold * 2;
+            }
+
+            // Streak Multiplier
+            let multiplier = 1.0;
+            if (streak >= 7) multiplier = 2.0;
+            else if (streak >= 5) multiplier = 1.5;
+            else if (streak >= 3) multiplier = 1.2;
+
+            const goldAdded = Math.ceil(baseGold * multiplier);
+            t.earnedGold = goldAdded; // Save to revert if unchecked
+
+            setGold((prev) => prev + goldAdded);
+            setLastGoldGain({
+              amount: goldAdded,
+              isCritical,
+              taskTitle: t.title,
+              timestamp: Date.now(),
+            });
+
+            if (isCritical) {
+              setTimeout(() => {
+                confetti({
+                  particleCount: 50,
+                  angle: 60,
+                  spread: 55,
+                  origin: { x: 0 },
+                  colors: ["#D97706", "#FBBF24"],
+                });
+                confetti({
+                  particleCount: 50,
+                  angle: 120,
+                  spread: 55,
+                  origin: { x: 1 },
+                  colors: ["#D97706", "#FBBF24"],
+                });
+              }, 150);
+            }
+
             if (t.statKey) {
               setStats((prevStats) => ({
                 ...prevStats,
@@ -296,6 +346,13 @@ export function GameProvider({ children }) {
             playSound("uncomplete");
             setExp((prev) => Math.max(0, prev - t.exp));
             setEnergy((prev) => Math.max(0, prev - 5));
+            
+            // Revert gold
+            const goldToRevert = t.earnedGold || t.exp;
+            setGold((prev) => Math.max(0, prev - goldToRevert));
+            t.earnedGold = 0;
+            setLastGoldGain(null);
+
             if (t.statKey) {
               setStats((prevStats) => ({
                 ...prevStats,
@@ -332,6 +389,17 @@ export function GameProvider({ children }) {
 
     const reward = rewards.find((r) => r.id === id);
     if (!reward) return { success: false, message: "Phần thưởng không tồn tại! ❌" };
+
+    // STRICT WEALTH CHECK: Verify if child has enough gold!
+    if (gold < reward.cost) {
+      return {
+        success: false,
+        message: `Quốc Bảo chưa đủ Tiền Vàng để đổi quà này! Cần thêm ${reward.cost - gold} 🪙 nữa nhé! ⚠️`
+      };
+    }
+
+    // Deduct gold
+    setGold((prev) => Math.max(0, prev - reward.cost));
 
     // Mark as approved & redeem
     setRewards((prev) =>
@@ -407,7 +475,7 @@ export function GameProvider({ children }) {
   };
 
   // Add custom reward (Parent only)
-  const addCustomReward = (title, costVal, typeVal, minutes = 0) => {
+  const addCustomReward = (title, costVal, typeVal, minutes = 0, rarityVal = "rare") => {
     const newId = "reward_" + Date.now();
     const newReward = {
       id: newId,
@@ -416,6 +484,7 @@ export function GameProvider({ children }) {
       type: typeVal,
       value: typeVal === "game_time" ? parseInt(minutes) : "custom_perk",
       parentApproved: false,
+      rarity: rarityVal,
       custom: true,
     };
 
@@ -480,6 +549,8 @@ export function GameProvider({ children }) {
     setScreenTimeLeft(0);
     setIsTimerActive(false);
     setTimerEndTime(0);
+    setGold(0);
+    setLastGoldGain(null);
     setLastResetDate(new Date().toLocaleDateString("vi-VN"));
     setEncouragements([
       { id: "e1", text: "Chào mừng Quốc Bảo bước vào Hành trình anh hùng mùa hè! Con sẵn sàng chưa? 🌳", read: false }
@@ -528,6 +599,10 @@ export function GameProvider({ children }) {
         deleteReward,
         resetDailyTasks,
         resetEntireGame,
+        gold,
+        setGold,
+        lastGoldGain,
+        setLastGoldGain,
       }}
     >
       {children}
